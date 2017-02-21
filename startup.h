@@ -1,0 +1,103 @@
+#include <stdint.h>
+
+#ifndef STARTUP_H_
+#define STARTUP_H_
+
+extern void main();
+
+void __isr_reset();
+void __isr_default();
+
+void __isr_nmi() __attribute__((weak, alias("__isr_default")));
+void __isr_hard_fault() __attribute__((weak, alias("__isr_default")));
+void __isr_memory_management() __attribute__((weak, alias("__isr_default")));
+void __isr_bus_fault() __attribute__((weak, alias("__isr_default")));
+void __isr_usage_fault() __attribute__((weak, alias("__isr_default")));
+void __isr_svc() __attribute__((weak, alias("__isr_default")));
+void __isr_debug_monitor() __attribute__((weak, alias("__isr_default")));
+void __isr_pending_svc() __attribute__((weak, alias("__isr_default")));
+void __isr_systick() __attribute__((weak, alias("__isr_default")));
+void __isr_window_watchdog() __attribute__((weak, alias("__isr_default")));
+void __isr_pvd() __attribute__((weak, alias("__isr_default")));
+void __isr_tamper__timestamp() __attribute__((weak, alias("__isr_default")));
+void __isr_rtc_wakeup() __attribute__((weak, alias("__isr_default")));
+void __isr_flash() __attribute__((weak, alias("__isr_default")));
+void __isr_rcc() __attribute__((weak, alias("__isr_default")));
+void __isr_exti0() __attribute__((weak, alias("__isr_default")));
+void __isr_exti1() __attribute__((weak, alias("__isr_default")));
+void __isr_exti2() __attribute__((weak, alias("__isr_default")));
+void __isr_exti3() __attribute__((weak, alias("__isr_default")));
+void __isr_exti4() __attribute__((weak, alias("__isr_default")));
+void __isr_dma1_stream0() __attribute__((weak, alias("__isr_default")));
+void __isr_dma1_stream1() __attribute__((weak, alias("__isr_default")));
+void __isr_dma1_stream2() __attribute__((weak, alias("__isr_default")));
+void __isr_dma1_stream3() __attribute__((weak, alias("__isr_default")));
+void __isr_dma1_stream4() __attribute__((weak, alias("__isr_default")));
+void __isr_dma1_stream5() __attribute__((weak, alias("__isr_default")));
+void __isr_dma1_stream6() __attribute__((weak, alias("__isr_default")));
+void __isr_adc() __attribute__((weak, alias("__isr_default")));
+void __isr_can_tx() __attribute__((weak, alias("__isr_default")));
+void __isr_can_rx0() __attribute__((weak, alias("__isr_default")));
+void __isr_can_rx1() __attribute__((weak, alias("__isr_default")));
+void __isr_can_sce() __attribute__((weak, alias("__isr_default")));
+void __isr_exti5_to_9() __attribute__((weak, alias("__isr_default")));
+void __isr_tim1_brk__tim9() __attribute__((weak, alias("__isr_default")));
+void __isr_tim1_up__tim10() __attribute__((weak, alias("__isr_default")));
+void __isr_tim1_trigger__tim11() __attribute__((weak, alias("__isr_default")));
+void __isr_tim1_cc() __attribute__((weak, alias("__isr_default")));
+void __isr_tim2() __attribute__((weak, alias("__isr_default")));
+void __isr_tim3() __attribute__((weak, alias("__isr_default")));
+void __isr_tim4() __attribute__((weak, alias("__isr_default")));
+void __isr_i2c1_event() __attribute__((weak, alias("__isr_default")));
+void __isr_i2c1_error() __attribute__((weak, alias("__isr_default")));
+void __isr_i2c2_event() __attribute__((weak, alias("__isr_default")));
+void __isr_i2c2_error() __attribute__((weak, alias("__isr_default")));
+void __isr_spi1() __attribute__((weak, alias("__isr_default")));
+void __isr_spi2() __attribute__((weak, alias("__isr_default")));
+void __isr_usart1() __attribute__((weak, alias("__isr_default")));
+void __isr_usart2() __attribute__((weak, alias("__isr_default")));
+void __isr_usart3() __attribute__((weak, alias("__isr_default")));
+void __isr_exti10_to_15() __attribute__((weak, alias("__isr_default")));
+void __isr_rtc_alarm() __attribute__((weak, alias("__isr_default")));
+void __isr_usb_otg_fs_wakeup() __attribute__((weak, alias("__isr_default")));
+void __isr_tim8_brk__tim12() __attribute__((weak, alias("__isr_default")));
+void __isr_tim8_up__tim_13() __attribute__((weak, alias("__isr_default")));
+void __isr_tim8_trigger__tim14() __attribute__((weak, alias("__isr_default")));
+void __isr_tim8_cc() __attribute__((weak, alias("__isr_default")));
+void __isr_dma1_stream7() __attribute__((weak, alias("__isr_default")));
+void __isr_fsmc() __attribute__((weak, alias("__isr_default")));
+void __isr_sdio() __attribute__((weak, alias("__isr_default")));
+void __isr_tim5() __attribute__((weak, alias("__isr_default")));
+void __isr_spi3() __attribute__((weak, alias("__isr_default")));
+void __isr_uart4() __attribute__((weak, alias("__isr_default")));
+void __isr_uart5() __attribute__((weak, alias("__isr_default")));
+void __isr_tim6__dac() __attribute__((weak, alias("__isr_default")));
+void __isr_tim7() __attribute__((weak, alias("__isr_default")));
+void __isr_dma2_stream0() __attribute__((weak, alias("__isr_default")));
+void __isr_dma2_stream1() __attribute__((weak, alias("__isr_default")));
+void __isr_dma2_stream2() __attribute__((weak, alias("__isr_default")));
+void __isr_dma2_stream3() __attribute__((weak, alias("__isr_default")));
+void __isr_dma2_stream4() __attribute__((weak, alias("__isr_default")));
+void __isr_eth() __attribute__((weak, alias("__isr_default")));
+void __isr_eth_wakeup() __attribute__((weak, alias("__isr_default")));
+void __isr_can2_tx() __attribute__((weak, alias("__isr_default")));
+void __isr_can2_rx0() __attribute__((weak, alias("__isr_default")));
+void __isr_can2_rx1() __attribute__((weak, alias("__isr_default")));
+void __isr_can2_sce() __attribute__((weak, alias("__isr_default")));
+void __isr_usb_otg_fs() __attribute__((weak, alias("__isr_default")));
+void __isr_dma2_stream5() __attribute__((weak, alias("__isr_default")));
+void __isr_dma2_stream6() __attribute__((weak, alias("__isr_default")));
+void __isr_dma2_stream7() __attribute__((weak, alias("__isr_default")));
+void __isr_usart6() __attribute__((weak, alias("__isr_default")));
+void __isr_i2c3_event() __attribute__((weak, alias("__isr_default")));
+void __isr_i2c3_error() __attribute__((weak, alias("__isr_default")));
+void __isr_usb_otg_hs_endp1_out() __attribute__((weak, alias("__isr_default")));
+void __isr_usb_otg_hs_endp1_in() __attribute__((weak, alias("__isr_default")));
+void __isr_usb_otg_hs_wakeup() __attribute__((weak, alias("__isr_default")));
+void __isr_usb_otg_hs() __attribute__((weak, alias("__isr_default")));
+void __isr_dcmi() __attribute__((weak, alias("__isr_default")));
+void __isr_cryp() __attribute__((weak, alias("__isr_default")));
+void __isr_hash_rng() __attribute__((weak, alias("__isr_default")));
+void __isr_fpu() __attribute__((weak, alias("__isr_default")));
+
+#endif
