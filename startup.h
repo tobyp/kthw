@@ -5,14 +5,15 @@
 
 extern void main();
 
-void __isr_reset();
 void __isr_default();
+void __isr_fault();
 
-void __isr_nmi() __attribute__((weak, alias("__isr_default")));
-void __isr_hard_fault() __attribute__((weak, alias("__isr_default")));
+void __isr_reset();
+void __isr_nmi() __attribute__((weak, alias("__isr_fault")));
+void __isr_hard_fault() __attribute__((weak, alias("__isr_fault")));
 void __isr_memory_management() __attribute__((weak, alias("__isr_default")));
-void __isr_bus_fault() __attribute__((weak, alias("__isr_default")));
-void __isr_usage_fault() __attribute__((weak, alias("__isr_default")));
+void __isr_bus_fault() __attribute__((weak, alias("__isr_fault")));
+void __isr_usage_fault() __attribute__((weak, alias("__isr_fault")));
 void __isr_svc() __attribute__((weak, alias("__isr_default")));
 void __isr_debug_monitor() __attribute__((weak, alias("__isr_default")));
 void __isr_pending_svc() __attribute__((weak, alias("__isr_default")));

@@ -13,6 +13,10 @@ void __isr_default() {
 	while (1) { }
 }
 
+void __isr_fault() {
+	while (1) { }
+}
+
 void __isr_reset() {
 	/* copy .data from rom to ram */
 	uint8_t * src = (uint8_t *)&__sec_text_end;
