@@ -1,28 +1,39 @@
-#include <stdint.h>
+ #include <stdint.h>
 
 #include "stm32f407vg.h"
 
-#define MASK_SER 0x100ul	//B8
+/*#define MASK_SER 0x100ul	//B8
 #define MASK_SRCLK 0x200ul	//B9
-#define MASK_RCLK 0x400ul	//B10
+#define MASK_RCLK 0x400ul	//B10 */
 #define MASK_DONE 0x800ul	//B11
 #define MASK_BLINK 0x1000ul	//B12
 #define MASK_BTN_IN 0x2000ul	//B13
 
-void sr_write(uint8_t value) {
+struct shift_register {
+	uint32_t * reg;
+	uint16_t mask_ser;
+	uint16_t mask_srclk;
+	uint16_t mask_rclk;
+	//uint16_t mask_oe;
+	//uint16_t mask_srclr;
+};
+
+struct shift_register sr_simon = {GPIOB_ODR, 0x100ul, 0x200ul, 0x400ul};
+
+void sr_write(struct shift_register *sr, uint8_t value) {
 	for (uint8_t i=0; i<8; ++i) {
 		if (value & 0x1) {
-			*GPIOB_ODR |= MASK_SER;
+			*sr->reg |= sr->mask_ser;
 		}
 		else {
-			*GPIOB_ODR &= ~MASK_SER;
+			*sr->reg &= ~sr->mask_ser;
 		}
-		*GPIOB_ODR |= MASK_SRCLK;
+		*sr->reg |= sr->mask_srclk;
 		value >>= 1;
 		asm("nop");
-		*GPIOB_ODR &= ~MASK_SRCLK;
+		*sr->reg &= ~sr->mask_srclk;
 	}
-	*GPIOB_ODR |= MASK_RCLK; asm("nop"); asm("nop"); *GPIOB_ODR &= ~MASK_RCLK;
+	*sr->reg |= sr->mask_rclk; asm("nop"); asm("nop"); *sr->reg &= ~sr->mask_rclk;
 }
 
 uint8_t v = 0x11;
@@ -30,7 +41,7 @@ void __isr_systick() {
 	*GPIOD_ODR ^= 0x1000;
 
 	v = ((v << 7) | (v >> 1));
-	sr_write(v);
+	sr_write(&sr_simon, v);
 
 	uint8_t btn_val = (*GPIOB_IDR & MASK_BTN_IN) >> 12;
 	if (btn_val) {

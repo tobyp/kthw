@@ -4,7 +4,7 @@ LD=arm-none-eabi-ld
 OBJCOPY=arm-none-eabi-objcopy
 OBJDUMP=arm-none-eabi-objdump
 
-CCFLAGS=-I./ -fno-common -g -mcpu=cortex-m4 -mthumb
+CCFLAGS=-I./ -std=c11 -fno-common -g -mcpu=cortex-m4 -mthumb
 ASFLAGS=-mcpu=cortex-m4
 LDFLAGS=-nostartfiles -T stm32f407vg.ld
 
