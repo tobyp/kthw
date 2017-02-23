@@ -1,4 +1,5 @@
- #include <stdint.h>
+#include <stdint.h>
+#include <stddef.h>
 
 #include "stm32f407vg.h"
 
@@ -17,7 +18,6 @@ struct shift_register {
 	//uint16_t mask_oe;
 	//uint16_t mask_srclr;
 };
-
 
 struct simonsays {
 	uint16_t tick_counter;
@@ -47,9 +47,42 @@ void sr_write(struct shift_register *sr, uint8_t value) {
 	*sr->reg |= sr->mask_rclk; __asm__("nop"); __asm__("nop"); *sr->reg &= ~sr->mask_rclk;
 }
 
-uint8_t v = 0x11;
-//uint32_t systick_counter = 0;
+#define BOMB_EXPLODED 0x1
+#define STRIKE_LIMIT 3
+#define TICKS_PER_SEC 10000
 
+struct bomb {
+	uint8_t flags;
+	uint32_t ticks;
+	uint8_t strikes;
+
+	struct shift_register * sr_timer[3];
+	struct shift_register * sr_strikes;
+};
+
+struct bomb bomb = {0, 0xFFFFFFFF, 0, {NULL, NULL, NULL}, NULL};
+
+
+void explode() { }
+
+uint8_t sevenseg_digits[] = {0xFC,0x60,0xDA,0xF2,0x66,0xB6,0xFA,0xE0,0xFE,0xF6};
+
+int bomb_tick(struct bomb * bomb) {
+	if (bomb->flags & BOMB_EXPLODED) return 1;
+	if (bomb->ticks) bomb->ticks--;
+	if (bomb->ticks == 0 || bomb->strikes == STRIKE_LIMIT) {
+		bomb->flags |= BOMB_EXPLODED;
+		explode();
+		return 1;
+	}
+	uint32_t secs = bomb->ticks / TICKS_PER_SEC;
+	//sr_write(bomb->sr_timer[0], sevenseg_digits[secs / 1 % 10]);
+	//sr_write(bomb->sr_timer[1], sevenseg_digits[secs / 10 % 10]);
+	//sr_write(bomb->sr_timer[2], sevenseg_digits[secs / 100 % 10]);
+	//sr_write(bomb->sr_strikes, (1 << bomb->strikes) - 1);
+}
+
+uint8_t v = 0x11;
 void simonsays_tick(struct simonsays *ss) {
 	uint32_t x = ss->tick_counter % 5000;
 	if (x <= 2500) {
@@ -58,61 +91,7 @@ void simonsays_tick(struct simonsays *ss) {
 	else {
 		v = 0;
 	}
-
-	/*if (systick_counter == 0){
-		v = ss->seq_out[0];
-		//sr_write(ss->sr,v);
-	}
-	else if (systick_counter == 2500){
-		v = 0;
-		//sr_write(ss->sr,v);
-	}
-	if (systick_counter == 5000  && ss->phase >= 1){
-		v = ss->seq_out[1];
-		//sr_write(ss->sr,v);
-	}
-	if (systick_counter == 7500){
-		v = 0;
-		//sr_write(ss->sr,v);
-	}
-	if (systick_counter == 10000 && ss->phase >= 2){
-		v = ss->seq_out[2];
-		//sr_write(ss->sr,ss->seq_out[2]);
-	}
-	if (systick_counter == 12500){
-		v = 0;
-		//sr_write(ss->sr,0);
-	}
-	if (systick_counter == 15000 && ss->phase >= 3){
-		v = ss->seq_out[3];
-		//sr_write(ss->sr,ss->seq_out[3]);
-	}
-	if (systick_counter == 17500){
-		v = 0;
-		//sr_write(ss->sr,0);
-	}
-	if (systick_counter == 20000 && ss->phase >= 4){
-		v = ss->seq_out[4];
-		//sr_write(ss->sr,ss->seq_out[4]);
-	}
-	if (systick_counter == 22500){
-		v = 0;
-		//sr_write(ss->sr,0);
-	}
-	if (systick_counter == 25000 && ss->phase >= 5){
-		v = ss->seq_out[5];
-		//sr_write(ss->sr,ss->seq_out[5]);
-	}
-	if (systick_counter == 27500){
-		v = 0;
-		//sr_write(ss->sr,0);
-	} */
-	switch (ss->tick_counter % 4) {
-		case 0: v = 16 | v; break;
-		case 1: v = 32 | v; break; 
-		case 2: v = 64 | v; break; 
-		case 3: v = 128 | v;break;
-	}
+	v |= 1 << ((ss->tick_counter % 4) + 4);
 
 	sr_write(ss->sr,v);
 	ss->tick_counter = (ss->tick_counter +1) % 25001;
@@ -127,25 +106,12 @@ void simonsays_tick(struct simonsays *ss) {
 }
 
 void __isr_systick() {
-	//*GPIOD_ODR ^= 0x1000;
+	*GPIOD_ODR ^= 0x1000;
 
-	/*v = ((v << 7) | (v >> 1));
-	sr_write(&sr_simon, v);*/
-	
-	
-	/*uint8_t btn_val = (*GPIOB_IDR & MASK_BTN_IN) >> 12;
-	if (btn_val) {
-		*GPIOB_ODR |= MASK_BLINK;
+	if (bomb_tick(&bomb)) {
+		simonsays_tick(&bomb, &simonsays);
 	}
-	else {
-		*GPIOB_ODR &= ~MASK_BLINK;
-	}*/
-	
-	/*systick_counter++;
-	if (systick_counter > 125000)
-		systick_counter = 0;*/
-	simonsays_tick(&simonsays);
-} 
+}
 
 uint8_t what_button(uint8_t flash) {
 	return flash << 4; //Platzhalter
@@ -167,7 +133,7 @@ void main() {
 	*GPIOB_PUPDR &= 0xc000000ul;
 	*GPIOB_PUPDR |= 0x8000000ul; //B13 pull-down
 
-	*STK_LOAD = 1000000ul;
+	*STK_LOAD = 200ul;
 	*STK_VAL = 0;
 	*STK_CTRL |= (STK_TICKINT | STK_ENABLE);
 
