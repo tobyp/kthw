@@ -8,20 +8,21 @@
 #include "util.h"
 #include "shift_register.h"
 
-#define MASK_DONE 0x800ul	//B11
-#define MASK_BLINK 0x1000ul	//B12
-#define MASK_BTN_IN 0x2000ul	//B13
+#define MASK_B8		0x100ul		//SIMON_SR_SER
+#define MASK_B9		0x200ul		//SIMON_SR_SRCLK
+#define MASK_B10	0x400ul		//SIMON_SR_RCLK
+#define MASK_B13	0x2000ul	//SIMON_BTN_IN
 
-struct shift_register sr_simon = {GPIOx_ODR(GPIOB_BASE), 0x100ul, 0x200ul, 0x400ul};
-struct simonsays simonsays = {{0, NULL}, 0, 0, 0, {0,0,0,0},6,{0,1,2,3,2,1},{0,1,2,3,2,1},&sr_simon, 0, GPIOx_IDR(GPIOB_BASE), MASK_BTN_IN};
+#define MASK_D12	0x1000ul	//D12
+
+struct shift_register sr_simon = {GPIOx_ODR(GPIOB_BASE), MASK_B8, MASK_B9, MASK_B10};
+struct simonsays simonsays = {{0, &simonsays_tick, NULL}, 0, 0, 0, {0,0,0,0},6,{0,1,2,3,2,1},&sr_simon, 0, GPIOx_IDR(GPIOB_BASE), MASK_B13};
 struct bomb bomb = {0, 0xFFFFFFFF, 0, {NULL, NULL, NULL}, NULL, &simonsays.mod};
 
 void __isr_systick() {
 	*GPIOx_ODR(GPIOD_BASE) ^= 0x1000;
 
-	if (!bomb_tick(&bomb)) {
-		simonsays_tick(&bomb, &simonsays);
-	}
+	tick(&bomb);
 }
 
 void main() {

@@ -18,8 +18,7 @@ struct simonsays {
 	int8_t button_caches[4];
 	uint8_t stage_count;
 
-	uint8_t seq_out [6];
-	uint8_t seq_in[6];
+	uint8_t seq[6];
 	struct shift_register *sr;
 	uint8_t stage;
 
@@ -27,6 +26,6 @@ struct simonsays {
 	uint32_t button_mask;
 };
 
-void simonsays_tick(struct bomb * bomb, struct simonsays *ss);
+void simonsays_tick(struct bomb * bomb, struct module * module);
 
 #endif

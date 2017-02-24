@@ -6,12 +6,17 @@
 #include "shift_register.h"
 
 #define BOMB_DONE 0x1
+#define BOMB_SERIAL_VOWEL 0x2
+
 #define STRIKE_LIMIT 3
 #define TICKS_PER_SEC 100
 #define MOD_DONE 0x1
 
+struct bomb;
+
 struct module {
 	uint8_t flags;
+	void (*tick)(struct bomb * bomb, struct module * module);
 	struct module * next;
 };
 
@@ -27,6 +32,6 @@ struct bomb {
 };
 
 void strike(struct bomb * bomb);
-int bomb_tick(struct bomb * bomb);
+void tick(struct bomb * bomb);
 
 #endif
