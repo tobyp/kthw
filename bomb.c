@@ -22,8 +22,8 @@ void tick(struct bomb * bomb) {
 	uint8_t all_done = 1;
 	for (struct module * m = bomb->modules; m != NULL; m = m->next) {
 		if (!(m->flags & MOD_DONE)) {
-			all_done = 0;
 			m->tick(bomb, m);
+			all_done = 0;
 		}
 	}
 
@@ -33,6 +33,10 @@ void tick(struct bomb * bomb) {
 		return;
 	}
 
+	uint32_t secs = bomb->ticks / TICKS_PER_SEC;
+	if (bomb->ticks % TICKS_PER_SEC == 0) {
+		print("timer: "); print_uint(secs); print("\n");
+	}
 	//sr_write(bomb->sr_timer[0], sevenseg_digits[secs / 1 % 10]);
 	//sr_write(bomb->sr_timer[1], sevenseg_digits[secs / 10 % 10]);
 	//sr_write(bomb->sr_timer[2], sevenseg_digits[secs / 100 % 10]);

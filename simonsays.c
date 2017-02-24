@@ -7,16 +7,17 @@
 #define RED		2
 #define GREEN	3
 
+//BLUE YELLOW RED GREEN
 static uint8_t expectations[2][3][4] = {
 	{
-		{BLUE, YELLOW, GREEN, RED},
-		{RED, BLUE, YELLOW, GREEN},
-		{YELLOW, GREEN, BLUE, RED},
+		{YELLOW,	RED,		BLUE,		GREEN,		},
+		{BLUE,		GREEN,		RED,		YELLOW,		},
+		{GREEN,		RED,		YELLOW,		BLUE,		},
 	},
 	{
-		{BLUE, RED, YELLOW, GREEN},
-		{YELLOW, GREEN, BLUE, RED},
-		{GREEN, RED, YELLOW, BLUE},
+		{RED,		GREEN,		BLUE,		YELLOW,		},
+		{GREEN,		RED,		YELLOW,		BLUE,		},
+		{RED,		BLUE,		GREEN,		YELLOW,		},
 	}
 };
 
@@ -28,20 +29,21 @@ void simonsays_tick(struct bomb * bomb, struct module * mod) {
 	if (ss->button_countdown != 0) {
 		ss->button_countdown--;
 		if (ss->button_countdown == 0) {
-			bomb->strikes++;
+			strike(bomb);
 		}
 	}
 
-	uint8_t button = (*ss->button_reg & ss->button_mask) >> 12;
+	uint8_t button = (*ss->button_reg & ss->button_mask) ? 1 : 0;
 	if (ss->button_caches[poll_button] != button) {
 		if (button) {
 			uint8_t expected_button = expectations[bomb->flags & BOMB_SERIAL_VOWEL ? 1 : 0][bomb->strikes % 3][ss->seq[ss->expected_index]];
 			if (poll_button == expected_button) { //button was the expected one
 				ss->expected_index++;
 				if (ss->expected_index > ss->stage) {  //stage is done
-					ss->expected_index = 0;
 					ss->stage++;
 					ss->tick_counter = (ss->stage + 1) * PHASE_TICKS;
+					ss->expected_index = 0;
+					ss->button_countdown = 0;
 					if (ss->stage == ss->stage_count) {
 						mod->flags |= MOD_DONE;
 						sr_write(ss->sr, 0);
@@ -50,6 +52,7 @@ void simonsays_tick(struct bomb * bomb, struct module * mod) {
 					}
 				}
 				else {
+					ss->tick_counter = (ss->stage + 1) * PHASE_TICKS;
 					ss->button_countdown = BUTTON_FLANK_TICKS;
 				}
 			}

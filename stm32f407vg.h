@@ -199,3 +199,19 @@
 #define ADCx_JDR4(base) ((uint32_t*)(base+0x48))
 #define ADCx_DR(base) ((uint32_t*)(base+0x4c))
 
+/* Random Number Generator */
+
+#define RNG_BASE 0x50060800ul
+
+#define RNG_CR	((uint32_t*)(RNG_BASE+0x00))
+#define RNG_CR_RNGEN	0x00000004ul
+#define RNG_CR_IE		0x00000008ul
+
+#define RNG_SR	((uint32_t*)(RNG_BASE+0x04))
+#define RNG_SR_DRDY		0x00000001ul
+#define RNG_SR_CECS		0x00000002ul
+#define RNG_SR_SECS		0x00000004ul
+#define RNG_SR_CEIS		0x00000002ul
+#define RNG_SR_SEIS		0x00000004ul
+
+#define RNG_DR	((uint32_t*)(RNG_BASE+0x08))

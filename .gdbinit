@@ -1,7 +1,12 @@
 define reload
 	monitor reset halt
-	file main.elf
-	load
+	load main.elf
+	monitor reset init
+end
+
+define restart
+	monitor reset init
+	continue
 end
 
 define flash
