@@ -54,6 +54,7 @@ struct bomb {
 void bomb_init(struct bomb * bomb, struct shreg * sr_flags0, struct gpio * in_flags0, struct shreg * sr_flags1, struct gpio * in_flags1, struct shreg * timer0, struct shreg * timer1, struct shreg * timer2, struct shreg * timer3, struct shreg * strikes);
 void bomb_add_module(struct bomb * bomb, struct module * module);
 void strike(struct bomb * bomb);
+void explode(struct bomb * bomb);
 void tick(struct bomb * bomb);
 
 #endif

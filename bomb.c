@@ -3,11 +3,6 @@
 #include "util.h"
 
 void bomb_init(struct bomb * bomb, struct shreg * sr_flags0, struct gpio * in_flags0, struct shreg * sr_flags1, struct gpio * in_flags1, struct shreg * timer0, struct shreg * timer1, struct shreg * timer2, struct shreg * timer3, struct shreg * strikes) {
-	bomb->flags = 0;
-	bomb->flags_time = 0;
-	bomb->flags_read_progress = 0;
-	bomb->timer = 10 * 60 * TICKS_PER_SEC - 1;
-	bomb->strikes = 0;
 	bomb->sr_timer[0] = timer0;
 	bomb->sr_timer[1] = timer1;
 	bomb->sr_timer[2] = timer2;
@@ -17,6 +12,13 @@ void bomb_init(struct bomb * bomb, struct shreg * sr_flags0, struct gpio * in_fl
 	bomb->sr_flags[1] = sr_flags1;
 	bomb->in_flags[0] = in_flags0;
 	bomb->in_flags[1] = in_flags1;
+
+	bomb->timer = 10 * 60 * TICKS_PER_SEC - 1;
+
+	bomb->flags = 0;
+	bomb->flags_time = 0;
+	bomb->flags_read_progress = 0;
+	bomb->strikes = 0;
 
 	bomb->modules = NULL;
 }
@@ -28,7 +30,12 @@ void bomb_add_module(struct bomb * bomb, struct module * module) {
 
 void strike(struct bomb * bomb) {
 	bomb->strikes++;
-	print("STRIKE! ("); print_uint(bomb->strikes); print(")\n");
+	print("STRIKE "); print_uint(bomb->strikes); print("\n");
+}
+
+void explode(struct bomb * bomb) {
+	bomb->strikes = bomb->strike_limit;
+	print("STRIKE OUT!\n");
 }
 
 static void bomb_reset(struct bomb * bomb) {

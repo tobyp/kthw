@@ -51,3 +51,7 @@ void print(char const* str) {
 uint32_t rnd() {
 	return 4;
 }
+
+uint32_t clamp(uint32_t v, uint32_t lower, uint32_t upper) {
+	return (v < lower ? lower : (v > upper ? upper : v));
+}
