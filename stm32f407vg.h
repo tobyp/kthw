@@ -1,8 +1,11 @@
+#include <stdint.h>
+
 /* CORTEX-M FEATURES */
 /* Nested Vector Interrupt Controller */
 #define NVIC_BASE	0xe000e100ul
 
 #define NVIC_PRIn(n) ((uint32_t*)(NVIC_BASE+0x300+4*(n)))
+#define NVIC_ISER(n) ((uint32_t*)(NVIC_BASE+4*(n)))
 
 /* SysTick */
 #define STK_BASE	0xe000e010ul
@@ -180,7 +183,16 @@
 #define ADC_SR_OVR		0x00000020ul
 
 #define ADCx_CR1(base) ((uint32_t*)(base+0x04))
+#define ADC_CR1_EOCIE	0x00000020ul
+#define ADC_CR1_SCAN	0x00000100ul
+
 #define ADCx_CR2(base) ((uint32_t*)(base+0x08))
+#define ADC_CR2_CONT	0x00000002ul
+#define	ADC_CR2_ADON	0x00000001ul
+#define ADC_CR2_EOCS	0x00000400ul
+#define ADC_CR2_ALIGN	0x00000800ul
+#define ADC_CR2_SWSTART	0x40000000ul
+
 #define ADCx_SMPR1(base) ((uint32_t*)(base+0x0c))
 #define ADCx_SMPR2(base) ((uint32_t*)(base+0x10))
 #define ADCx_JOFR1(base) ((uint32_t*)(base+0x14))

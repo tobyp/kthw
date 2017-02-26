@@ -4,30 +4,30 @@
 #include <stdint.h>
 
 #include "bomb.h"
-#include "shift_register.h"
+#include "util.h"
 
 #define TICKS_PER_DOT 50
 
-#define MORSE_SEQ_SLICK {0xa8, 0xba, 0x8a, 0x3a, 0xe8, 0xeb, 0x80}, 7*8
-#define MORSE_FREQ_SLICK 522
+struct morse_seq {
+	uint8_t dots[32];
+	uint8_t bits;
+	uint16_t freq;
+};
 
 struct morse {
 	struct module mod;
 	uint16_t ticks;
-	uint8_t seq[13]; //longest letter is J/Q/X; a word with 6 of those takes 100 units
-	uint8_t seq_units;
+	struct morse_seq * seq;
 
-	uint16_t freq_expect;
-	uint16_t freq_set;
+	uint8_t button_cache;
 
-	uint32_t * adc_cr;
-	uint32_t * adc_data;
-	uint32_t * led_reg;
-	uint32_t led_mask;
-	uint32_t * button_reg;
-	uint32_t button_mask;
+	struct gpio * out_led;
+	struct gpio * in_btn;
+	struct shreg * freq[4];
+	struct adc * adc;
 };
 
+void morse_init(struct bomb * bomb, struct morse * morse, struct gpio * out_led, struct gpio * in_btn, struct adc * adc, struct shreg * freq0, struct shreg * freq1, struct shreg * freq2, struct shreg * freq3);
 void morse_tick(struct bomb * bomb, struct module * module);
 
 #endif

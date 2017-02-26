@@ -21,6 +21,27 @@ static uint8_t expectations[2][3][4] = {
 	}
 };
 
+void simonsays_init(struct bomb * bomb, struct simonsays * simonsays, struct gpio * in_btn, struct shreg * sr) {
+	simonsays->mod.flags = 0;
+	simonsays->mod.tick = &simonsays_tick;
+	simonsays->mod.next = NULL;
+
+	simonsays->tick_counter = 0;
+	simonsays->button_countdown = 0;
+	simonsays->expected_index = 0;
+	simonsays->button_caches[0] = 0;
+	simonsays->button_caches[1] = 0;
+	simonsays->button_caches[2] = 0;
+	simonsays->button_caches[3] = 0;
+	simonsays->stage_count = rnd() % 6;
+	for (uint8_t i=0; i<simonsays->stage_count; ++i) {
+		simonsays->seq[i] = rnd() % 4;
+	}
+	simonsays->stage = 0;
+	simonsays->sr = sr;
+	simonsays->in_btn = in_btn;
+}
+
 void simonsays_tick(struct bomb * bomb, struct module * mod) {
 	struct simonsays * ss = (struct simonsays *)mod;
 
@@ -33,10 +54,11 @@ void simonsays_tick(struct bomb * bomb, struct module * mod) {
 		}
 	}
 
-	uint8_t button = (*ss->button_reg & ss->button_mask) ? 1 : 0;
+	uint8_t button = (*ss->in_btn->reg & ss->in_btn->mask) ? 1 : 0;
 	if (ss->button_caches[poll_button] != button) {
+		ss->button_caches[poll_button] = button;
 		if (button) {
-			uint8_t expected_button = expectations[bomb->flags & BOMB_SERIAL_VOWEL ? 1 : 0][bomb->strikes % 3][ss->seq[ss->expected_index]];
+			uint8_t expected_button = expectations[bomb->flags & BOMB_SER_VOW ? 1 : 0][bomb->strikes % 3][ss->seq[ss->expected_index]];
 			if (poll_button == expected_button) { //button was the expected one
 				ss->expected_index++;
 				if (ss->expected_index > ss->stage) {  //stage is done
@@ -46,7 +68,7 @@ void simonsays_tick(struct bomb * bomb, struct module * mod) {
 					ss->button_countdown = 0;
 					if (ss->stage == ss->stage_count) {
 						mod->flags |= MOD_DONE;
-						sr_write(ss->sr, 0);
+						ss->sr->value = 0;
 						print("simon_says: disarmed\n");
 						return;
 					}
@@ -58,14 +80,13 @@ void simonsays_tick(struct bomb * bomb, struct module * mod) {
 			}
 			else {
 				strike(bomb);
-				sr_write(ss->sr, 0);
+				ss->sr->value = 0;
 				ss->stage = 0;
 				ss->expected_index = 0;
 				ss->button_countdown = 0;
 			}
 		}
 	}
-	ss->button_caches[poll_button] = button;
 
 	ss->tick_counter = (ss->tick_counter + 1) % ((ss->stage + 3) * PHASE_TICKS);
 
@@ -78,5 +99,5 @@ void simonsays_tick(struct bomb * bomb, struct module * mod) {
 		v |= phase_progress <= PHASE_DUTY_TICKS ? (1 << ss->seq[phase_index]) : 0;
 	}
 
-	sr_write(ss->sr,v);
+	ss->sr->value = v;
 }

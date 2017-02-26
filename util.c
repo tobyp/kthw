@@ -2,6 +2,8 @@
 
 #include "stm32f407vg.h"
 
+uint8_t sevenseg_digits[] = {0x03,0x9f,0x25,0x0d,0x99,0x49,0x41,0x1f,0x01,0x09};
+
 void print_uint(uint32_t v) {
 	char digits[10] = {0};
 	uint8_t i;
@@ -26,4 +28,8 @@ void print(char const* str) {
 		}
 		str++;
 	}
+}
+
+uint32_t rnd() {
+	return 4;
 }

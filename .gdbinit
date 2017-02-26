@@ -2,10 +2,12 @@ define reload
 	monitor reset halt
 	load main.elf
 	monitor reset init
+	monitor reset halt
 end
 
 define restart
 	monitor reset init
+	monitor reset halt
 	continue
 end
 

@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "bomb.h"
-#include "shift_register.h"
+#include "util.h"
 
 #define PHASE_TICKS 75
 #define PHASE_DUTY_TICKS 35
@@ -19,13 +19,13 @@ struct simonsays {
 	uint8_t stage_count;
 
 	uint8_t seq[6];
-	struct shift_register *sr;
 	uint8_t stage;
 
-	uint32_t * button_reg;
-	uint32_t button_mask;
+	struct shreg * sr;
+	struct gpio * in_btn;
 };
 
+void simonsays_init(struct bomb * bomb, struct simonsays * simonsays, struct gpio * in_btn, struct shreg * sr);
 void simonsays_tick(struct bomb * bomb, struct module * module);
 
 #endif
