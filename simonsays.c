@@ -21,83 +21,77 @@ static uint8_t expectations[2][3][4] = {
 	}
 };
 
-void simonsays_init(struct bomb * bomb, struct simonsays * simonsays, struct gpio * in_btn, struct shreg * sr) {
-	simonsays->mod.flags = 0;
-	simonsays->mod.tick = &simonsays_tick;
-	simonsays->mod.next = NULL;
+int simonsays_prepare_tick(struct bomb * bomb, struct module * module) {
+	struct simonsays * simonsays = (struct simonsays *)module;
 
-	simonsays->tick_counter = 0;
-	simonsays->button_countdown = 0;
-	simonsays->expected_index = 0;
-	simonsays->button_caches[0] = 0;
-	simonsays->button_caches[1] = 0;
-	simonsays->button_caches[2] = 0;
-	simonsays->button_caches[3] = 0;
 	simonsays->stage_count = rnd() % 6;
 	for (uint8_t i=0; i<simonsays->stage_count; ++i) {
-		simonsays->seq[i] = rnd() % 4;
+		simonsays->seq[i] = (rnd() + i) % 4;
 	}
-	simonsays->stage = 0;
-	simonsays->sr = sr;
-	simonsays->in_btn = in_btn;
+
+	return 1;
 }
 
-void simonsays_tick(struct bomb * bomb, struct module * mod) {
-	struct simonsays * ss = (struct simonsays *)mod;
+int simonsays_tick(struct bomb * bomb, struct module * module) {
+	struct simonsays * simonsays = (struct simonsays *)module;
 
-	uint32_t poll_button = ss->tick_counter % 4;
+	uint32_t poll_button = simonsays->ticks % 4;
 
-	if (ss->button_countdown != 0) {
-		ss->button_countdown--;
-		if (ss->button_countdown == 0) {
+	if (simonsays->button_countdown != 0) {
+		simonsays->button_countdown--;
+		if (simonsays->button_countdown == 0) {
 			strike(bomb);
 		}
 	}
 
-	uint8_t button = (*ss->in_btn->reg & ss->in_btn->mask) ? 1 : 0;
-	if (ss->button_caches[poll_button] != button) {
-		ss->button_caches[poll_button] = button;
+	uint8_t button = (*simonsays->in_btn->reg & simonsays->in_btn->mask) ? 1 : 0;
+	if (simonsays->button_caches[poll_button] != button) {
+		simonsays->button_caches[poll_button] = button;
 		if (button) {
-			uint8_t expected_button = expectations[bomb->flags & BOMB_SER_VOW ? 1 : 0][bomb->strikes % 3][ss->seq[ss->expected_index]];
+			uint8_t expected_button = expectations[bomb->flags & BOMB_SER_VOW ? 1 : 0][bomb->strikes % 3][simonsays->seq[simonsays->expected_index]];
 			if (poll_button == expected_button) { //button was the expected one
-				ss->expected_index++;
-				if (ss->expected_index > ss->stage) {  //stage is done
-					ss->stage++;
-					ss->tick_counter = (ss->stage + 1) * PHASE_TICKS;
-					ss->expected_index = 0;
-					ss->button_countdown = 0;
-					if (ss->stage == ss->stage_count) {
-						mod->flags |= MOD_DONE;
-						ss->sr->value = 0;
-						print("simon_says: disarmed\n");
-						return;
+				simonsays->expected_index++;
+				if (simonsays->expected_index > simonsays->stage) {  //stage is done
+					simonsays->stage++;
+					simonsays->ticks = (simonsays->stage + 1) * PHASE_TICKS;
+					simonsays->expected_index = 0;
+					simonsays->button_countdown = 0;
+					if (simonsays->stage == simonsays->stage_count) {
+						return 1;
 					}
 				}
 				else {
-					ss->tick_counter = (ss->stage + 1) * PHASE_TICKS;
-					ss->button_countdown = BUTTON_FLANK_TICKS;
+					simonsays->ticks = (simonsays->stage + 1) * PHASE_TICKS;
+					simonsays->button_countdown = BUTTON_FLANK_TICKS;
 				}
 			}
 			else {
 				strike(bomb);
-				ss->sr->value = 0;
-				ss->stage = 0;
-				ss->expected_index = 0;
-				ss->button_countdown = 0;
+				simonsays->sr->value = 0;
+				simonsays->stage = 0;
+				simonsays->expected_index = 0;
+				simonsays->button_countdown = 0;
 			}
 		}
 	}
 
-	ss->tick_counter = (ss->tick_counter + 1) % ((ss->stage + 3) * PHASE_TICKS);
+	simonsays->ticks = (simonsays->ticks + 1) % ((simonsays->stage + 3) * PHASE_TICKS);
 
-	poll_button = ss->tick_counter % 4;
+	poll_button = simonsays->ticks % 4;
 	uint8_t v = 1 << (poll_button + 4);
 
-	if (ss->tick_counter < (ss->stage + 1) * PHASE_TICKS) {
-		register uint32_t phase_index = ss->tick_counter / PHASE_TICKS;
-		register uint32_t phase_progress = ss->tick_counter % PHASE_TICKS;
-		v |= phase_progress <= PHASE_DUTY_TICKS ? (1 << ss->seq[phase_index]) : 0;
+	if (simonsays->ticks < (simonsays->stage + 1) * PHASE_TICKS) {
+		register uint32_t phase_index = simonsays->ticks / PHASE_TICKS;
+		register uint32_t phase_progress = simonsays->ticks % PHASE_TICKS;
+		v |= phase_progress <= PHASE_DUTY_TICKS ? (1 << simonsays->seq[phase_index]) : 0;
 	}
 
-	ss->sr->value = v;
+	simonsays->sr->value = v;
+	return 0;
+}
+
+void simonsays_reset(struct bomb * bomb, struct module * module) {
+	struct simonsays * simonsays = (struct simonsays *)module;
+
+	simonsays->sr->value = 0;
 }

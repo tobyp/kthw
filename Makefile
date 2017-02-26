@@ -16,7 +16,7 @@ clean:
 main.bin: main.elf
 	$(OBJCOPY) -O binary $< $@
 
-main.elf: startup.o main.o util.o bomb.o simonsays.o morse.o # core_cm4.o stm32f4xx_rcc.o stm32f4xx_adc.o stm32f4xx_gpio.o adc.o
+main.elf: startup.o main.o util.o bomb.o simonsays.o morse.o wires.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 startup.o: stm32f407vg.h

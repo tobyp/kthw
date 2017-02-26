@@ -15,19 +15,20 @@ struct morse_seq {
 };
 
 struct morse {
-	struct module mod;
-	uint16_t ticks;
-	struct morse_seq * seq;
-
-	uint8_t button_cache;
-
+	struct module module;
 	struct gpio * out_led;
 	struct gpio * in_btn;
-	struct shreg * freq[4];
 	struct adc * adc;
+	struct shreg * freq[4];
+
+	uint16_t ticks;
+	struct morse_seq * seq;
+	uint8_t button_cache;
 };
 
-void morse_init(struct bomb * bomb, struct morse * morse, struct gpio * out_led, struct gpio * in_btn, struct adc * adc, struct shreg * freq0, struct shreg * freq1, struct shreg * freq2, struct shreg * freq3);
-void morse_tick(struct bomb * bomb, struct module * module);
+int morse_prepare_tick(struct bomb * bomb, struct module * module);
+int morse_tick(struct bomb * bomb, struct module * module);
+void morse_reset(struct bomb * bomb, struct module * module);
 
+#define MORSE_MOD_INIT {0, "morse", &morse_prepare_tick, &morse_tick, &morse_reset, NULL}
 #endif

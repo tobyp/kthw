@@ -20,6 +20,24 @@ void print_uint(uint32_t v) {
 	}
 }
 
+static char hexits[] = "0123456789abcdef";
+
+void print_uint_hex(uint32_t v) {
+	char digits[8] = {0};
+	uint8_t i;
+	for (i=8; v > 0;) {
+		digits[--i] = v % 16;
+		v /= 16;
+	}
+	if (i==8) i = 7;
+	for (; i<8; ++i) {
+		*USARTx_DR(UART4_BASE) = hexits[digits[i]];
+		while ((*USARTx_SR(UART4_BASE) & USART_SR_TXE) == 0) {
+			__asm__("nop");
+		}
+	}
+}
+
 void print(char const* str) {
 	while (*str) {
 		*USARTx_DR(UART4_BASE) = *str;

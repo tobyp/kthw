@@ -7,11 +7,20 @@
 #include "bomb.h"
 #include "simonsays.h"
 #include "morse.h"
+#include "wires.h"
 
-#define PIN_8	0x100ul
-#define PIN_9	0x200ul
-#define PIN_10	0x400ul
-#define PIN_11	0x800ul
+#define PIN_0	0x0001ul
+#define PIN_1	0x0002ul
+#define PIN_2	0x0004ul
+#define PIN_3	0x0008ul
+#define PIN_4	0x0010ul
+#define PIN_5	0x0020ul
+#define PIN_6	0x0040ul
+#define PIN_7	0x0080ul
+#define PIN_8	0x0100ul
+#define PIN_9	0x0200ul
+#define PIN_10	0x0400ul
+#define PIN_11	0x0800ul
 #define PIN_12	0x1000ul
 #define PIN_13	0x2000ul
 #define PIN_14	0x4000ul
@@ -22,21 +31,29 @@
 #define GPIO_OUTC		GPIOx_ODR(GPIOC_BASE)
 #define GPIO_INC		GPIOx_IDR(GPIOC_BASE)
 
-uint32_t dummy_reg;
 
-struct gpio timer0_ser = {GPIO_OUTB, PIN_15};
-struct gpio strikes_ser = {GPIO_OUTB, PIN_14};
-struct gpio simonsays_ser = {GPIO_OUTB, PIN_8};
-struct gpio simonsays_btn = {GPIO_INB, PIN_11};
-struct gpio morse_led = {GPIO_OUTB, PIN_12};
-struct gpio morse_btn = {GPIO_INB, PIN_13};
-struct gpio sr_srclk = {GPIO_OUTB, PIN_9};
-struct gpio sr_rclk = {GPIO_OUTB, PIN_10};
+struct gpio simonsays_ser =	{GPIO_OUTB, PIN_8};
+struct gpio sr_srclk =		{GPIO_OUTB, PIN_9};
+struct gpio sr_rclk =		{GPIO_OUTB, PIN_10};
+struct gpio simonsays_btn =	{GPIO_INB,  PIN_11};
+struct gpio morse_led =		{GPIO_OUTB, PIN_12};
+struct gpio morse_btn =		{GPIO_INB,  PIN_13};
+struct gpio strikes_ser =	{GPIO_OUTB, PIN_14};
+struct gpio timer0_ser =	{GPIO_OUTB, PIN_15};
+
+#define morse_adc =			{GPIO_INC,  PIN_0};
+struct gpio wires_in0 =		{GPIO_INC,  PIN_1};
+struct gpio wires_in1 =		{GPIO_INC,  PIN_2};
+struct gpio wires_in2 =		{GPIO_INC,  PIN_3};
+struct gpio wires_in3 =		{GPIO_INC,  PIN_4};
+struct gpio wires_in4 =		{GPIO_INC,  PIN_5};
+struct gpio wires_in5 =		{GPIO_INC,  PIN_6};
 //#define SR_OE
 //#define SR_SRCLR
+
+uint32_t dummy_reg;
 struct gpio bomb_flags0 = {&dummy_reg, 0};
 struct gpio bomb_flags1 = {&dummy_reg, 0};
-
 struct gpio DUMMY = {&dummy_reg, 0};
 
 
@@ -66,7 +83,7 @@ struct shreg shregs[] = {
 	{&DUMMY, 0}, //flags0 (vowel, even, >=2 bats, parallel, FRK)
 	{&DUMMY, 0}, //flags1 (5 bits time, 3 bits strikes)
 
-	{&simonsays_ser, 0}, //simon_says
+	{&simonsays_ser, 0},
 
 	{&DUMMY, 0}, //morse_freq0
 	{&DUMMY, 0}, //morse_freq1
@@ -79,25 +96,32 @@ enum {
 };
 
 struct adc adcs[] = {
-	{0}, //morse
+	{10, 0}, //morse
 };
 
-struct morse morse;
-struct simonsays simonsays;
-struct bomb bomb;
+struct morse morse = {MORSE_MOD_INIT, &morse_led, &morse_btn, &adcs[ADC_MORSE], {&shregs[SR_MORSE_FREQ0], &shregs[SR_MORSE_FREQ1], &shregs[SR_MORSE_FREQ2], &shregs[SR_MORSE_FREQ3]}};
+struct simonsays simonsays = {SIMONSAYS_MOD_INIT, &simonsays_btn, &shregs[SR_SIMON_SAYS]};
+struct wires wires = {WIRES_MOD_INIT, {&wires_in0, &wires_in1, &wires_in2, &wires_in3, &wires_in4, &wires_in5}};
+struct bomb bomb = {{&bomb_flags0, &bomb_flags1}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKES], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}};
 
 void main() {
 	/* GPIO */
-	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIODEN;
-
-	*GPIOx_MODER(GPIOD_BASE) &= ~0x03000000ul;
-	*GPIOx_MODER(GPIOD_BASE) |=  0x01000000ul; //D12 (onboard LED) out
+	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
 
 	*GPIOx_MODER(GPIOB_BASE) &= ~0xffff0000ul;
 	*GPIOx_MODER(GPIOB_BASE) |=  0x51150000ul; //B8-10,12,14-15 out, B11,13 in
 
 	*GPIOx_PUPDR(GPIOB_BASE) &= ~0x0cc00000ul;
 	*GPIOx_PUPDR(GPIOB_BASE) |=  0x08800000ul; //B11,13 pull-down
+
+	*GPIOx_MODER(GPIOC_BASE) &= ~0x00003ffcul;
+	*GPIOx_MODER(GPIOC_BASE) |=  0x00000000ul; //C1-C6 in
+
+	*GPIOx_PUPDR(GPIOC_BASE) &= ~0x00003ffcul;
+	*GPIOx_PUPDR(GPIOC_BASE) |=  0x00002aa8ul; //C1-C6 pull-down
+
+	*GPIOx_MODER(GPIOD_BASE) &= ~0x03000000ul;
+	*GPIOx_MODER(GPIOD_BASE) |=  0x01000000ul; //D12 (onboard LED) out
 
 	/* UART */
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
@@ -116,7 +140,7 @@ void main() {
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
 
 	*GPIOx_MODER(GPIOC_BASE) &= ~0x3ul;
-	*GPIOx_MODER(GPIOC_BASE) |= 0x3ul; //PC0 analog
+	*GPIOx_MODER(GPIOC_BASE) |= 0x3ul; //C0 analog
 
 	*RCC_APB2ENR |= RCC_APB2ENR_ADC1EN;
 
@@ -127,19 +151,18 @@ void main() {
 	//*ADCx_CR2(ADC1_BASE) |= ADC_CR2_CONT;
 	//*ADCx_CR2(ADC1_BASE) |= ADC_CR2_EOCS;
 
-	*ADCx_SMPR1(ADC1_BASE) |= 0x7;
-	*ADCx_SQR3(ADC1_BASE) |= 0xaUL;
+	*ADCx_SMPR1(ADC1_BASE) |= 0x07ffffff;
+	*ADCx_SMPR2(ADC1_BASE) |= 0x3fffffff; //sample all channels at 480 cycles
+	*ADCx_SQR3(ADC1_BASE) |= adcs[0].channel;
 
 	*NVIC_ISER(0) |= (1 << 18);
 
 	*ADCx_CR2(ADC1_BASE) |= ADC_CR2_SWSTART;
 
 	/* BOMB */
-	bomb_init(&bomb, &shregs[SR_FLAGS0], &bomb_flags0, &shregs[SR_FLAGS1], &bomb_flags1, &shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3], &shregs[SR_STRIKES]);
-	simonsays_init(&bomb, &simonsays, &simonsays_btn, &shregs[SR_SIMON_SAYS]);
-	//bomb_add_module(&bomb, &simonsays.mod);
-	morse_init(&bomb, &morse, &morse_led, &morse_btn, &adcs[ADC_MORSE], &shregs[SR_MORSE_FREQ0], &shregs[SR_MORSE_FREQ1], &shregs[SR_MORSE_FREQ2], &shregs[SR_MORSE_FREQ3]);
-	bomb_add_module(&bomb, &morse.mod);
+	//bomb_add_module(&bomb, &simonsays.module);
+	bomb_add_module(&bomb, &morse.module);
+	bomb_add_module(&bomb, &wires.module);
 
 	/* SysTick */
 	*NVIC_PRIn(3) &= 0xff000000ul;
@@ -156,6 +179,10 @@ uint8_t current_adc = 0;
 void __isr_adc() {
 	adcs[current_adc].value = *ADCx_DR(ADC1_BASE);
 	current_adc = (current_adc + 1) % (sizeof(adcs)/sizeof(struct adc));
+	if (current_adc != 0) {
+		*ADCx_SQR3(ADC1_BASE) |= adcs[current_adc].channel;
+		*ADCx_CR2(ADC1_BASE) |= ADC_CR2_SWSTART;
+	}
 }
 
 void __isr_systick() {
@@ -175,5 +202,9 @@ void __isr_systick() {
 	}
 	*sr_rclk.reg |= sr_rclk.mask; *sr_rclk.reg &= ~sr_rclk.mask;
 	//print("adc: "); print_uint(adcs[0].value); print("\n");
+	if (current_adc != 0) {
+		print("interrupted adc sequence... ??? good luck.\n");
+	}
+	current_adc = 0;
 	*ADCx_CR2(ADC1_BASE) |= ADC_CR2_SWSTART;
 }

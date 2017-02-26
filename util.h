@@ -6,6 +6,7 @@
 #define NULL ((void*)0)
 
 extern uint8_t sevenseg_digits[];
+#define SEVENSEG_WITH_DOT(x) ((x) & 0xfe)
 
 struct gpio {
 	uint32_t * reg;
@@ -13,6 +14,7 @@ struct gpio {
 };
 
 struct adc {
+	uint8_t channel;
 	uint16_t value;
 };
 
@@ -25,6 +27,7 @@ struct shreg {
 
 void print(char const* str);
 void print_uint(uint32_t v);
+void print_uint_hex(uint32_t v);
 uint32_t rnd();
 
 #endif
