@@ -24,6 +24,8 @@ int morse_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct morse * morse = (struct morse *)module;
 
 	morse->seq = &morse_seqs[rnd() % (sizeof(morse_seqs) / sizeof(struct morse_seq))];
+
+	return 1;
 }
 
 int morse_tick(struct bomb * bomb, struct module * module) {

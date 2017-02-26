@@ -9,6 +9,7 @@
 #include "morse.h"
 #include "wires.h"
 #include "capacitor.h"
+#include "memory.h"
 
 #define PIN_0	0x0001ul
 #define PIN_1	0x0002ul
@@ -31,6 +32,8 @@
 #define GPIO_INB	GPIOx_IDR(GPIOB_BASE)
 #define GPIO_OUTC	GPIOx_ODR(GPIOC_BASE)
 #define GPIO_INC	GPIOx_IDR(GPIOC_BASE)
+#define GPIO_OUTD	GPIOx_ODR(GPIOD_BASE)
+#define GPIO_IND	GPIOx_IDR(GPIOD_BASE)
 
 
 struct gpio simonsays_ser =	{GPIO_OUTB, PIN_8};
@@ -52,7 +55,15 @@ struct gpio wires_in5 =		{GPIO_INC,  PIN_6};
 struct gpio cap_in =		{GPIO_INC,  PIN_7};
 struct gpio cap0_ser =		{GPIO_OUTC, PIN_8};
 struct gpio cap1_ser =		{GPIO_OUTC, PIN_9};
+struct gpio mem0_ser =		{GPIO_OUTC, PIN_10};
+struct gpio mem1_ser =		{GPIO_OUTC, PIN_11};
+struct gpio mem2_ser =		{GPIO_OUTC, PIN_12};
+struct gpio mem3_ser =		{GPIO_OUTC, PIN_13};
+struct gpio mem_disp_ser =	{GPIO_OUTC, PIN_14};
+struct gpio mem_btn_ser =	{GPIO_OUTC, PIN_15};
 
+struct gpio mem_btn_in =	{GPIO_IND,  PIN_0};
+struct gpio mem_stage_ser =	{GPIO_OUTD, PIN_1};
 //#define SR_OE
 //#define SR_SRCLR
 
@@ -78,6 +89,14 @@ enum {
 
 	SR_CAP0,
 	SR_CAP1,
+
+	SR_MEM0,
+	SR_MEM1,
+	SR_MEM2,
+	SR_MEM3,
+	SR_MEM_DISP,
+	SR_MEM_STAGE,
+	SR_MEM_BTN,
 };
 
 struct shreg shregs[] = {
@@ -98,6 +117,14 @@ struct shreg shregs[] = {
 
 	{&cap0_ser, 0},
 	{&cap1_ser, 0},
+
+	{&mem0_ser, 0},
+	{&mem1_ser, 0},
+	{&mem2_ser, 0},
+	{&mem3_ser, 0},
+	{&mem_disp_ser, 0},
+	{&mem_stage_ser, 0},
+	{&mem_btn_ser, 0},
 };
 
 enum {
@@ -112,26 +139,27 @@ struct morse morse = {MORSE_MOD_INIT, &morse_led, &morse_btn, &adcs[ADC_MORSE], 
 struct simonsays simonsays = {SIMONSAYS_MOD_INIT, &simonsays_btn, &shregs[SR_SIMON_SAYS]};
 struct wires wires = {WIRES_MOD_INIT, {&wires_in0, &wires_in1, &wires_in2, &wires_in3, &wires_in4, &wires_in5}};
 struct capacitor capacitor = {CAPACITOR_MOD_INIT, &cap_in, {&shregs[SR_CAP0], &shregs[SR_CAP1]}};
+struct memory memory = {MEMORY_MOD_INIT, &mem_btn_in, &shregs[SR_MEM_BTN], &shregs[SR_MEM_STAGE], &shregs[SR_MEM_DISP], {&shregs[SR_MEM0], &shregs[SR_MEM1], &shregs[SR_MEM2], &shregs[SR_MEM3]}};
 struct bomb bomb = {{&DUMMY, &DUMMY}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKES], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}};
 
-void main() {
+int main() {
 	/* GPIO */
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
 
 	*GPIOx_MODER(GPIOB_BASE) &= ~0xffff0000ul;
 	*GPIOx_MODER(GPIOB_BASE) |=  0x51150000ul; //B8-10,12,14-15 out, B11,13 in
-
 	*GPIOx_PUPDR(GPIOB_BASE) &= ~0x0cc00000ul;
 	*GPIOx_PUPDR(GPIOB_BASE) |=  0x08800000ul; //B11,13 pull-down
 
-	*GPIOx_MODER(GPIOC_BASE) &= ~0x000ffffcul;
-	*GPIOx_MODER(GPIOC_BASE) |=  0x00050000ul; //C1-7 in, C8-9 out
-
+	*GPIOx_MODER(GPIOC_BASE) &= ~0xfffffffcul;
+	*GPIOx_MODER(GPIOC_BASE) |=  0x55550000ul; //C1-7 in, C8-15 out
 	*GPIOx_PUPDR(GPIOC_BASE) &= ~0x0000fffcul;
 	*GPIOx_PUPDR(GPIOC_BASE) |=  0x0000aaa8ul; //C1-7 pull-down
 
-	*GPIOx_MODER(GPIOD_BASE) &= ~0x03000000ul;
-	*GPIOx_MODER(GPIOD_BASE) |=  0x01000000ul; //D12 (onboard LED) out
+	*GPIOx_MODER(GPIOD_BASE) &= ~0x0300000ful;
+	*GPIOx_MODER(GPIOD_BASE) |=  0x01000004ul; //D0 in, D1 out, D12 (onboard LED) out
+	*GPIOx_PUPDR(GPIOD_BASE) &= ~0x00000003ul;
+	*GPIOx_PUPDR(GPIOD_BASE) |=  0x00000002ul; //D0 pull-down
 
 	/* UART */
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
@@ -174,6 +202,7 @@ void main() {
 	bomb_add_module(&bomb, &morse.module);
 	bomb_add_module(&bomb, &wires.module);
 	bomb_add_module(&bomb, &capacitor.module);
+	bomb_add_module(&bomb, &memory.module);
 
 	/* SysTick */
 	*NVIC_PRIn(3) &= 0xff000000ul;
@@ -183,6 +212,8 @@ void main() {
 	*STK_CTRL |= (STK_TICKINT | STK_ENABLE);
 
 	while(1) { }
+
+	return 0;
 }
 
 uint8_t current_adc = 0;

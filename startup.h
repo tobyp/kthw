@@ -3,7 +3,7 @@
 #ifndef STARTUP_H_
 #define STARTUP_H_
 
-extern void main();
+extern int main();
 
 void __isr_default();
 void __isr_fault();

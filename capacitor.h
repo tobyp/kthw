@@ -24,5 +24,5 @@ int capacitor_prepare_tick(struct bomb * bomb, struct module * module);
 int capacitor_tick(struct bomb * bomb, struct module * module);
 void capacitor_reset(struct bomb * bomb, struct module * module);
 
-#define CAPACITOR_MOD_INIT {0, "capacitor", &capacitor_prepare_tick, &capacitor_tick, &morse_reset, NULL}
+#define CAPACITOR_MOD_INIT {0, "capacitor", &capacitor_prepare_tick, &capacitor_tick, &capacitor_reset, NULL}
 #endif
