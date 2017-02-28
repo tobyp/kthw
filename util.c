@@ -5,6 +5,13 @@
 uint8_t sevenseg_digits[] = {0x03,0x9f,0x25,0x0d,0x99,0x49,0x41,0x1f,0x01,0x09};
 static char hexits[] = "0123456789abcdef";
 
+void delay(uint32_t ms) {
+	ms *= 266;
+	while (ms > 0) {
+		ms--;
+	}
+}
+
 void print_uint(uint32_t v) {
 	uint8_t digits[10] = {0};
 	uint8_t i;

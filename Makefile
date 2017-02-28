@@ -16,7 +16,13 @@ clean:
 main.bin: main.elf
 	$(OBJCOPY) -O binary $< $@
 
-main.elf: startup.o main.o util.o bomb.o simonsays.o morse.o wires.o capacitor.o memory.o
+main.elf: startup.o main.o util.o bomb.o simonsays.o morse.o wires.o capacitor.o memory.o password.o
+	$(LD) $(LDFLAGS) -o $@ $^
+
+lcd_test.bin: lcd_test.elf
+	$(OBJCOPY) -O binary $< $@
+
+lcd_test.elf: startup.o lcd_test.o util.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 startup.o: stm32f407vg.h

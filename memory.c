@@ -32,11 +32,28 @@ static inline uint8_t expected_lbl(struct memory * memory) {
 
 static inline void populate(struct memory * memory) {
 	memory->display = rnd() % 4;
+
 	memory->buttons[0] = 0;
 	memory->buttons[1] = 1;
 	memory->buttons[2] = 2;
 	memory->buttons[3] = 3;
-	//shuffle
+
+	//unrolled fisher-yates shuffle
+	uint8_t j = rnd() % 4;
+	uint8_t temp = memory->buttons[j];
+	memory->buttons[j] = memory->buttons[3];
+	memory->buttons[3] = temp;
+
+	j = rnd() % 3;
+	temp = memory->buttons[j];
+	memory->buttons[j] = memory->buttons[2];
+	memory->buttons[2] = temp;
+
+	j = rnd() % 2;
+	temp = memory->buttons[j];
+	memory->buttons[j] = memory->buttons[1];
+	memory->buttons[1] = temp;
+
 	print("memory: \""); print_uint(memory->display + 1);
 	print("\" ["); print_uint(memory->buttons[0] + 1);
 	print(" "); print_uint(memory->buttons[1] + 1);

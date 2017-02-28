@@ -26,6 +26,19 @@ struct shreg {
 	uint8_t value_cache; //private to writeback loop
 };
 
+struct lcd {
+	struct gpio * lcd_rs;
+	struct gpio * lcd_en;
+	struct shreg * lcd_data;
+	uint8_t mode, cmd;
+};
+
+#define LCD_CMD 0
+#define LCD_DATA 1
+#define LCD_NONE 2
+#define LCD_CMD_CURSOR(x, y) ((x)*64+(y)+128)
+
+void delay(uint32_t ms);
 void print(char const* str);
 void print_uint(uint32_t v);
 void print_uint_hex(uint32_t v);

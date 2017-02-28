@@ -1,6 +1,6 @@
 define reload
 	monitor reset halt
-	load main.elf
+	load
 	monitor reset init
 	monitor reset halt
 end
@@ -14,7 +14,7 @@ end
 define flash
 	monitor reset halt
 	monitor flash probe 0
-	monitor flash write_image erase main.bin 0x08000000
+	monitor flash write_image erase lcd.bin 0x08000000
 	monitor reset run
 end
 

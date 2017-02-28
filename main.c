@@ -10,6 +10,7 @@
 #include "wires.h"
 #include "capacitor.h"
 #include "memory.h"
+#include "password.h"
 
 #define PIN_0	0x0001ul
 #define PIN_1	0x0002ul
@@ -46,7 +47,8 @@ struct gpio strikes_ser =	{GPIO_OUTB, PIN_14};
 struct gpio timer0_ser =	{GPIO_OUTB, PIN_15};
 
 #define morse_adc =			{GPIO_INC,  PIN_0};
-struct gpio wires_in0 =		{GPIO_INC,  PIN_1};
+#define pwd_adc_pos =		{GPIO_INC,  PIN_1};
+struct gpio wires_in0 =		{GPIO_IND,  PIN_8}; //D8
 struct gpio wires_in1 =		{GPIO_INC,  PIN_2};
 struct gpio wires_in2 =		{GPIO_INC,  PIN_3};
 struct gpio wires_in3 =		{GPIO_INC,  PIN_4};
@@ -64,6 +66,18 @@ struct gpio mem_btn_ser =	{GPIO_OUTC, PIN_15};
 
 struct gpio mem_btn_in =	{GPIO_IND,  PIN_0};
 struct gpio mem_stage_ser =	{GPIO_OUTD, PIN_1};
+struct gpio pwd_lcd_ser =	{GPIO_OUTD, PIN_2};
+struct gpio pwd_lcd_rs =	{GPIO_OUTD, PIN_3};
+struct gpio pwd_lcd_en =	{GPIO_OUTD, PIN_4};
+struct gpio pwd_down_in =	{GPIO_IND,  PIN_6};
+//D5: STM32F4Discovery: red LED
+struct gpio pwd_submit_in =	{GPIO_IND,  PIN_7};
+//D8 wires_in0
+struct gpio pwd_up_in =		{GPIO_IND,  PIN_9};
+//D12: STM32F4Discovery: green LED
+//D13: STM32F4Discovery: orange LED
+//D14: STM32F4Discovery: red LED
+//D15: STM32F4Discovery: blue LED
 //#define SR_OE
 //#define SR_SRCLR
 
@@ -97,6 +111,8 @@ enum {
 	SR_MEM_DISP,
 	SR_MEM_STAGE,
 	SR_MEM_BTN,
+
+	SR_PWD_LCD,
 };
 
 struct shreg shregs[] = {
@@ -125,41 +141,49 @@ struct shreg shregs[] = {
 	{&mem_disp_ser, 0},
 	{&mem_stage_ser, 0},
 	{&mem_btn_ser, 0},
+
+	{&pwd_lcd_ser, 0},
 };
 
 enum {
 	ADC_MORSE,
+	ADC_PWD_POS,
 };
 
 struct adc adcs[] = {
-	{10, 0}, //morse
+	{10, 0},
+	{11, 0},
 };
+
+struct lcd pwd_lcd = {&pwd_lcd_rs, &pwd_lcd_en, &shregs[SR_PWD_LCD], LCD_NONE, 0};
 
 struct morse morse = {MORSE_MOD_INIT, &morse_led, &morse_btn, &adcs[ADC_MORSE], {&shregs[SR_MORSE_FREQ0], &shregs[SR_MORSE_FREQ1], &shregs[SR_MORSE_FREQ2], &shregs[SR_MORSE_FREQ3]}};
 struct simonsays simonsays = {SIMONSAYS_MOD_INIT, &simonsays_btn, &shregs[SR_SIMON_SAYS]};
 struct wires wires = {WIRES_MOD_INIT, {&wires_in0, &wires_in1, &wires_in2, &wires_in3, &wires_in4, &wires_in5}};
 struct capacitor capacitor = {CAPACITOR_MOD_INIT, &cap_in, {&shregs[SR_CAP0], &shregs[SR_CAP1]}};
 struct memory memory = {MEMORY_MOD_INIT, &mem_btn_in, &shregs[SR_MEM_BTN], &shregs[SR_MEM_STAGE], &shregs[SR_MEM_DISP], {&shregs[SR_MEM0], &shregs[SR_MEM1], &shregs[SR_MEM2], &shregs[SR_MEM3]}};
+struct password password = {PASSWORD_MOD_INIT, &pwd_submit_in, {&pwd_up_in, &pwd_down_in}, &adcs[ADC_PWD_POS], &pwd_lcd};
+
 struct bomb bomb = {{&DUMMY, &DUMMY}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKES], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}};
 
 int main() {
 	/* GPIO */
-	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
+	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIODEN;
 
 	*GPIOx_MODER(GPIOB_BASE) &= ~0xffff0000ul;
 	*GPIOx_MODER(GPIOB_BASE) |=  0x51150000ul; //B8-10,12,14-15 out, B11,13 in
 	*GPIOx_PUPDR(GPIOB_BASE) &= ~0x0cc00000ul;
 	*GPIOx_PUPDR(GPIOB_BASE) |=  0x08800000ul; //B11,13 pull-down
 
-	*GPIOx_MODER(GPIOC_BASE) &= ~0xfffffffcul;
-	*GPIOx_MODER(GPIOC_BASE) |=  0x55550000ul; //C1-7 in, C8-15 out
-	*GPIOx_PUPDR(GPIOC_BASE) &= ~0x0000fffcul;
-	*GPIOx_PUPDR(GPIOC_BASE) |=  0x0000aaa8ul; //C1-7 pull-down
+	*GPIOx_MODER(GPIOC_BASE) &= ~0xfffffff0ul;
+	*GPIOx_MODER(GPIOC_BASE) |=  0x55550000ul; //C2-7 in, C8-15 out
+	*GPIOx_PUPDR(GPIOC_BASE) &= ~0x0000fff0ul;
+	*GPIOx_PUPDR(GPIOC_BASE) |=  0x0000aaa0ul; //C2-7 pull-down
 
-	*GPIOx_MODER(GPIOD_BASE) &= ~0x0300000ful;
-	*GPIOx_MODER(GPIOD_BASE) |=  0x01000004ul; //D0 in, D1 out, D12 (onboard LED) out
-	*GPIOx_PUPDR(GPIOD_BASE) &= ~0x00000003ul;
-	*GPIOx_PUPDR(GPIOD_BASE) |=  0x00000002ul; //D0 pull-down
+	*GPIOx_MODER(GPIOD_BASE) &= ~0x0303f3fful;
+	*GPIOx_MODER(GPIOD_BASE) |=  0x01000154ul; //D0,6-9 in, D1-4 out, D12 (onboard LED) out
+	*GPIOx_PUPDR(GPIOD_BASE) &= ~0x000ff003ul;
+	*GPIOx_PUPDR(GPIOD_BASE) |=  0x000aa002ul; //D0,6-9 pull-down
 
 	/* UART */
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
@@ -177,8 +201,8 @@ int main() {
 	/* ADC */
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
 
-	*GPIOx_MODER(GPIOC_BASE) &= ~0x3ul;
-	*GPIOx_MODER(GPIOC_BASE) |= 0x3ul; //C0 analog
+	*GPIOx_MODER(GPIOC_BASE) &= ~0xful;
+	*GPIOx_MODER(GPIOC_BASE) |= 0xful; //C0-1 analog
 
 	*RCC_APB2ENR |= RCC_APB2ENR_ADC1EN;
 
@@ -197,12 +221,16 @@ int main() {
 
 	*ADCx_CR2(ADC1_BASE) |= ADC_CR2_SWSTART;
 
+	/* LCD power up */
+	delay(150);
+
 	/* BOMB */
 	bomb_add_module(&bomb, &simonsays.module);
 	bomb_add_module(&bomb, &morse.module);
 	bomb_add_module(&bomb, &wires.module);
 	bomb_add_module(&bomb, &capacitor.module);
 	bomb_add_module(&bomb, &memory.module);
+	bomb_add_module(&bomb, &password.module);
 
 	/* SysTick */
 	*NVIC_PRIn(3) &= 0xff000000ul;
@@ -220,16 +248,13 @@ uint8_t current_adc = 0;
 
 void __isr_adc() {
 	adcs[current_adc].value = *ADCx_DR(ADC1_BASE);
-	current_adc = (current_adc + 1) % (sizeof(adcs)/sizeof(struct adc));
-	if (current_adc != 0) {
-		*ADCx_SQR3(ADC1_BASE) |= adcs[current_adc].channel;
-		*ADCx_CR2(ADC1_BASE) |= ADC_CR2_SWSTART;
-	}
 }
 
 void __isr_systick() {
 	//*GPIOx_ODR(GPIOD_BASE) ^= 0x1000;
 	tick(&bomb);
+	//lcd (part 1)
+	shregs[SR_PWD_LCD].value = pwd_lcd.cmd;
 	//commit shift registers
 	for (uint8_t j=0; j<(sizeof(shregs)/sizeof(struct shreg)); ++j) {
 		shregs[j].value_cache = shregs[j].value;
@@ -243,10 +268,20 @@ void __isr_systick() {
 		*sr_srclk.reg |= sr_srclk.mask; *sr_srclk.reg &= ~sr_srclk.mask;
 	}
 	*sr_rclk.reg |= sr_rclk.mask; *sr_rclk.reg &= ~sr_rclk.mask;
-	//print("adc: "); print_uint(adcs[0].value); print("\n");
-	if (current_adc != 0) {
-		print("interrupted adc sequence... ??? good luck.\n");
+	//lcd (part 2)
+	if (pwd_lcd.mode < LCD_NONE) {
+		*pwd_lcd.lcd_en->reg |=  pwd_lcd.lcd_en->mask;
+		if (pwd_lcd.mode) *pwd_lcd.lcd_rs->reg |= pwd_lcd.lcd_rs->mask;
+		else *pwd_lcd.lcd_rs->reg &= ~pwd_lcd.lcd_rs->mask;
+
+		delay(1);
+
+		*pwd_lcd.lcd_en->reg &= ~pwd_lcd.lcd_en->mask;
+		pwd_lcd.mode = LCD_NONE;
 	}
-	current_adc = 0;
+
+	current_adc = (current_adc + 1) % (sizeof(adcs)/sizeof(struct adc));
+	*ADCx_SQR3(ADC1_BASE) &= ~0x1f;
+	*ADCx_SQR3(ADC1_BASE) |= adcs[current_adc].channel;
 	*ADCx_CR2(ADC1_BASE) |= ADC_CR2_SWSTART;
 }
