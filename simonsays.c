@@ -24,10 +24,13 @@ static uint8_t expectations[2][3][4] = {
 int simonsays_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct simonsays * simonsays = (struct simonsays *)module;
 
-	simonsays->stage_count = rnd() % 6;
+	simonsays->stage_count = 4 + rnd() % 2;
+	printf("[%s] stages=%d sequence=[", module->name, simonsays->stage_count);
 	for (uint8_t i=0; i<simonsays->stage_count; ++i) {
 		simonsays->seq[i] = (rnd() + i) % 4;
+		printf("%d,", simonsays->seq[i]);
 	}
+	printf("\b]\n");
 
 	return 1;
 }

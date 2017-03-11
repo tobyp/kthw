@@ -30,12 +30,11 @@ void bomb_add_module(struct bomb * bomb, struct module * module) {
 
 void strike(struct bomb * bomb) {
 	bomb->strikes++;
-	print("STRIKE "); print_uint(bomb->strikes); print("\n");
+	printf("[bomb] strikes=%d\n", bomb->strikes);
 }
 
 void explode(struct bomb * bomb) {
 	bomb->strikes = bomb->strike_limit;
-	print("STRIKE OUT!\n");
 }
 
 static void bomb_reset(struct bomb * bomb) {
@@ -69,7 +68,7 @@ void tick(struct bomb * bomb) {
 		if (bomb->timer) bomb->timer--;
 		if (bomb->timer == 0 || bomb->strikes >= bomb->strike_limit) {
 			bomb->flags |= BOMB_DONE;
-			print("BOOM!\n");
+			printf("[bomb] explode\n");
 			bomb_reset(bomb);
 			return;
 		}
@@ -79,7 +78,7 @@ void tick(struct bomb * bomb) {
 			if (!(m->flags & MOD_DONE)) {
 				if (m->tick(bomb, m)) {
 					m->flags |= MOD_DONE;
-					print("bomb: module \""); print(m->name); print("\" disarmed.\n");
+					printf("[bomb] \"%s\" disarmed\n", m->name);
 					if (m->reset) m->reset(bomb, m);
 				}
 				else {
@@ -90,14 +89,14 @@ void tick(struct bomb * bomb) {
 
 		if (all_done) {
 			bomb->flags |= BOMB_DONE;
-			print("WIN!\n");
+			printf("[bomb] defused\n");
 			bomb_reset(bomb);
 			return;
 		}
 
 		uint32_t secs = bomb->timer / TICKS_PER_SEC;
 		if (bomb->timer % TICKS_PER_SEC == 0) {
-			print("timer: "); print_uint(secs); print("\n");
+			printf("[bomb] timer=%d\n", secs);
 		}
 
 		uint32_t mins = secs / 60 % 100;

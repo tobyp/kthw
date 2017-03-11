@@ -167,6 +167,25 @@ struct password password = {PASSWORD_MOD_INIT, &pwd_submit_in, {&pwd_up_in, &pwd
 struct bomb bomb = {{&DUMMY, &DUMMY}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKES], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}};
 
 int main() {
+	/* RCC/PLL */
+	//f_{VCO} = f_{PLL IN} * \frac{N}{M}; 50 <= N <= 432; 2 <= M <= 63
+	//N := 63
+	//M := 12
+	*RCC_PLLCFGR &= ~0x00007ffful;
+	*RCC_PLLCFGR |=  0x00002fc0ul | 0x0000000cul;
+	//f_{VCO} = 16 MHz * 21 / 4 = 84 MHz
+
+	//f_{OTG_SDIO_RNG} = f_{VCO} / Q; 2 <= Q <= 15
+	//Q := 2
+	*RCC_PLLCFGR &= ~0x0f000000ul;
+	*RCC_PLLCFGR |=  0x02000000ul;
+	//f_{OTG_SDIO_RNG} = 84 MHz / 2 = 42 MHz
+
+	//activate PLL
+	*RCC_CR |= RCC_CR_PLLON;
+	//wait PLLRDY
+	while ((*RCC_CR & RCC_CR_PLLRDY) == 0) { }
+
 	/* GPIO */
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIODEN;
 
@@ -184,19 +203,6 @@ int main() {
 	*GPIOx_MODER(GPIOD_BASE) |=  0x01000154ul; //D0,6-9 in, D1-4 out, D12 (onboard LED) out
 	*GPIOx_PUPDR(GPIOD_BASE) &= ~0x000ff003ul;
 	*GPIOx_PUPDR(GPIOD_BASE) |=  0x000aa002ul; //D0,6-9 pull-down
-
-	/* UART */
-	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-	*RCC_APB1ENR |= RCC_APB1ENR_USART4EN;
-
-	*GPIOx_MODER(GPIOA_BASE) &= ~0xful;
-	*GPIOx_MODER(GPIOA_BASE) |= 0xaul; //PA0 and PA1 Alternate Function
-
-	*GPIOx_AFRL(GPIOA_BASE) &= ~0xfful;
-	*GPIOx_AFRL(GPIOA_BASE) |= 0x88ul; //PA0 and PA1 to AF8 (UART4 TX/RX)
-
-	*USARTx_BRR(UART4_BASE) |= 139; //139 is 115200 Bd, 1667 is 9600 Bd at 16 MHz SYSCLK with OVER8=0
-	*USARTx_CR1(UART4_BASE) |= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
 
 	/* ADC */
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
@@ -220,6 +226,23 @@ int main() {
 	*NVIC_ISER(0) |= (1 << 18);
 
 	*ADCx_CR2(ADC1_BASE) |= ADC_CR2_SWSTART;
+
+	/* RNG */
+	*RCC_AHB2ENR |= RCC_AHB2ENR_RNGEN;
+	*RNG_CR |= RNG_CR_RNGEN;
+
+	/* UART */
+	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+	*RCC_APB1ENR |= RCC_APB1ENR_USART4EN;
+
+	*GPIOx_MODER(GPIOA_BASE) &= ~0xful;
+	*GPIOx_MODER(GPIOA_BASE) |= 0xaul; //PA0 and PA1 Alternate Function
+
+	*GPIOx_AFRL(GPIOA_BASE) &= ~0xfful;
+	*GPIOx_AFRL(GPIOA_BASE) |= 0x88ul; //PA0 and PA1 to AF8 (UART4 TX/RX)
+
+	*USARTx_BRR(UART4_BASE) |= 139; //139 is 115200 Bd, 1667 is 9600 Bd at 16 MHz SYSCLK with OVER8=0
+	*USARTx_CR1(UART4_BASE) |= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
 
 	/* LCD power up */
 	delay(150);

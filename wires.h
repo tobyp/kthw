@@ -9,8 +9,8 @@ struct wires {
 	struct module module;
 	struct gpio * in_wire[6];
 
-	uint8_t wires_to_cut;
-	uint8_t wire_cache;
+	uint8_t morituri;
+	uint8_t cache;
 };
 
 int wires_prepare_tick(struct bomb * bomb, struct module * module);

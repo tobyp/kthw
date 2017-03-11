@@ -4,7 +4,7 @@ int capacitor_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct capacitor * capacitor = (struct capacitor *)module;
 
 	capacitor->capacity = CAP_CAPACITY_MIN + rnd() % (CAP_CAPACITY_MAX - CAP_CAPACITY_MIN);
-	print("capacitor: "); print_uint(capacitor->capacity); print("\n");
+	printf("[%s] capacity=%d\n", module->name, capacitor->capacity);
 
 	return 1;
 }
@@ -20,7 +20,7 @@ int capacitor_tick(struct bomb * bomb, struct module * module) {
 		if (capacitor->charge <= CAP_DISCHARGE_PER_TICK) {
 			capacitor->charge = 0;
 			capacitor->capacity = CAP_CAPACITY_MIN + rnd() % (CAP_CAPACITY_MAX - CAP_CAPACITY_MIN);
-			print("capacitor: "); print_uint(capacitor->capacity); print("\n");
+			printf("[%s] capacity=%d\n", module->name, capacitor->capacity);
 		}
 		else {
 			capacitor->charge -= CAP_DISCHARGE_PER_TICK;
@@ -29,6 +29,7 @@ int capacitor_tick(struct bomb * bomb, struct module * module) {
 	else {
 		capacitor->charge = clamp(capacitor->charge + CAP_CHARGE_PER_TICK, 0, capacitor->capacity);
 		if (capacitor->charge >= capacitor->capacity) {
+			printf("[%s] overload\n", module->name);
 			explode(bomb);
 		}
 	}

@@ -42,35 +42,36 @@ struct word words[] = {
 
 int password_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct password * password = (struct password *)module;
-
-	password->word = &words[rnd() % (sizeof(words)/sizeof(struct word))];
-	password->cache = (*password->in_submit->reg & password->in_submit->mask ? 0x80 : 0) |
-		(*password->in_updown[1]->reg & password->in_updown[1]->mask ? 0x2 : 0) |
-		(*password->in_updown[0]->reg & password->in_updown[0]->mask ? 0x1 : 0);
-
-	password->letters[0][0] = password->word->chars[0];
-	password->letters[1][0] = password->word->chars[1];
-	password->letters[2][0] = password->word->chars[2];
-	password->letters[3][0] = password->word->chars[3];
-	password->letters[4][0] = password->word->chars[4];
-
-	for (uint8_t i=1; i<6; ++i) {
-		password->letters[0][i] = 'X';
-		password->letters[1][i] = 'X';
-		password->letters[2][i] = 'X';
-		password->letters[3][i] = 'X';
-		password->letters[4][i] = 'X';
-	}
-
-	password->selections[0] = rnd() % 6;
-	password->selections[1] = rnd() % 6;
-	password->selections[2] = rnd() % 6;
-	password->selections[3] = rnd() % 6;
-	password->selections[4] = rnd() % 6;
-
 	switch (password->ticks) {
 	//init
 	case 0:
+		password->word = &words[rnd() % (sizeof(words)/sizeof(struct word))];
+		printf("[%s] word=\"%s\"\n", module->name, password->word->chars);
+
+		password->cache = (*password->in_submit->reg & password->in_submit->mask ? 0x80 : 0) |
+			(*password->in_updown[1]->reg & password->in_updown[1]->mask ? 0x2 : 0) |
+			(*password->in_updown[0]->reg & password->in_updown[0]->mask ? 0x1 : 0);
+
+		password->letters[0][0] = password->word->chars[0];
+		password->letters[1][0] = password->word->chars[1];
+		password->letters[2][0] = password->word->chars[2];
+		password->letters[3][0] = password->word->chars[3];
+		password->letters[4][0] = password->word->chars[4];
+
+		for (uint8_t i=1; i<6; ++i) {
+			password->letters[0][i] = 'X';
+			password->letters[1][i] = 'X';
+			password->letters[2][i] = 'X';
+			password->letters[3][i] = 'X';
+			password->letters[4][i] = 'X';
+		}
+
+		password->selections[0] = rnd() % 6;
+		password->selections[1] = rnd() % 6;
+		password->selections[2] = rnd() % 6;
+		password->selections[3] = rnd() % 6;
+		password->selections[4] = rnd() % 6;
+
 		password->lcd->mode = LCD_CMD;
 		password->lcd->cmd = 0x0c;
 		break;
@@ -162,8 +163,6 @@ int password_tick(struct bomb * bomb, struct module * module) {
 		return 1;
 	}
 
-	//print("password: pos="); print_uint(password->adc_position->value); print("\n");
-
 	if (pos != password->pos) {
 		password->lcd_cache[0].mode = LCD_CMD;
 		password->lcd_cache[0].cmd = LCD_CMD_CURSOR(1, 1 + 3*password->pos);
@@ -183,7 +182,6 @@ int password_tick(struct bomb * bomb, struct module * module) {
 			sel = (sel + 1) % 6;
 		}
 		if (sel != password->selections[pos]) {
-			print("password: sel["); print_uint(pos); print("] "); print_uint(password->selections[pos]); print("->"); print_uint(sel); print("\n");
 			password->selections[pos] = sel;
 			password->lcd_cache[4].mode = LCD_CMD;
 			password->lcd_cache[4].cmd = LCD_CMD_CURSOR(0, 1 + 3*pos);

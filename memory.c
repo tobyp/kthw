@@ -54,12 +54,7 @@ static inline void populate(struct memory * memory) {
 	memory->buttons[j] = memory->buttons[1];
 	memory->buttons[1] = temp;
 
-	print("memory: \""); print_uint(memory->display + 1);
-	print("\" ["); print_uint(memory->buttons[0] + 1);
-	print(" "); print_uint(memory->buttons[1] + 1);
-	print(" "); print_uint(memory->buttons[2] + 1);
-	print(" "); print_uint(memory->buttons[3] + 1);
-	print("]\n");
+	printf("[%s] stage=%d display=%d buttons=[%d,%d,%d,%d]\n", memory->module.name, memory->stage, memory->display + 1, memory->buttons[0] + 1, memory->buttons[1] + 1, memory->buttons[2] + 1, memory->buttons[3] + 1);
 }
 
 int memory_prepare_tick(struct bomb * bomb, struct module * module) {
@@ -84,7 +79,7 @@ int memory_tick(struct bomb * bomb, struct module * module) {
 	uint32_t poll_index = memory->ticks;
 	uint8_t poll_mask = 1 << poll_index;
 	uint8_t poll_value = (*memory->in_btn->reg & memory->in_btn->mask) ? poll_mask : 0;
-	if ((memory->btn_cache & poll_mask) ^ poll_value) { //a wire has changed!
+	if ((memory->btn_cache & poll_mask) ^ poll_value) {
 		memory->btn_cache = (memory->btn_cache & ~poll_mask) | poll_value;
 		if (poll_value) { //button is now pushed
 			if (poll_index == expected_lbl(memory)) {

@@ -9,6 +9,7 @@
 #define TICKS_PER_DOT 50
 
 struct morse_seq {
+	char const* word;
 	uint8_t dots[32];
 	uint8_t bits;
 	uint16_t freq;

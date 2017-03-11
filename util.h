@@ -10,7 +10,7 @@ extern uint8_t sevenseg_digits[];
 #define SEVENSEG_BLANK 0xff
 
 struct gpio {
-	uint32_t * reg;
+	volatile uint32_t * reg;
 	uint32_t mask;
 };
 
@@ -39,9 +39,7 @@ struct lcd {
 #define LCD_CMD_CURSOR(x, y) ((x)*64+(y)+128)
 
 void delay(uint32_t ms);
-void print(char const* str);
-void print_uint(uint32_t v);
-void print_uint_hex(uint32_t v);
+void printf(char const* format, ...);
 uint32_t rnd();
 uint32_t clamp(uint32_t v, uint32_t lower, uint32_t upper);
 
