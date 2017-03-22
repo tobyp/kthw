@@ -1,24 +1,33 @@
 #include <stdint.h>
 
 /* CORTEX-M FEATURES */
-/* Nested Vector Interrupt Controller */
+/* (4.3) Nested vectored interrupt controller (NVIC) */
 #define NVIC_BASE	0xe000e100ul
 
 #define NVIC_PRIn(n) ((volatile uint32_t*)(NVIC_BASE+0x300+4*(n)))
-#define NVIC_ISER(n) ((volatile uint32_t*)(NVIC_BASE+4*(n)))
+#define NVIC_ISER(n) ((volatile uint32_t*)(NVIC_BASE+0x000+4*(n)))
 
-/* SysTick */
+/* (4.4) System Control Block (SCB) */
+#define SCB_BASE	0xe000ed00ul
+
+#define SCB_ICSR	((volatile uint32_t*)(SCB_BASE+0x04))
+#define SCB_ICSR_PENDSVSET	0x10000000ul
+
+#define SCB_CCR	((volatile uint32_t*)(SCB_BASE+0x14))
+#define SCB_CCR_STKALIGN	0x00000200ul
+
+/* (4.5) System timer (STK) */
 #define STK_BASE	0xe000e010ul
 
-#define STK_CTRL	((volatile uint32_t*)STK_BASE)
+#define STK_CTRL	((volatile uint32_t*)(STK_BASE+0x00))
 #define STK_ENABLE		0x00000001ul
 #define STK_TICKINT		0x00000002ul
 #define STK_CLKSOURCE	0x00000004ul
 #define STK_COUNTFLAG	0x00010000ul
 
-#define STK_LOAD	((volatile uint32_t *)(STK_BASE+0x4))
+#define STK_LOAD	((volatile uint32_t *)(STK_BASE+0x04))
 
-#define STK_VAL		((volatile uint32_t *)(STK_BASE+0x8))
+#define STK_VAL		((volatile uint32_t *)(STK_BASE+0x08))
 
 /* STM32F407VG FEATURES */
 /* (7) Reset and clock control (RCC) */

@@ -69,8 +69,8 @@ struct gpio mem_stage_ser =	{GPIO_OUTD, PIN_1};
 struct gpio pwd_lcd_ser =	{GPIO_OUTD, PIN_2};
 struct gpio pwd_lcd_rs =	{GPIO_OUTD, PIN_3};
 struct gpio pwd_lcd_en =	{GPIO_OUTD, PIN_4};
-struct gpio pwd_down_in =	{GPIO_IND,  PIN_6};
 //D5: STM32F4Discovery: red LED
+struct gpio pwd_down_in =	{GPIO_IND,  PIN_6};
 struct gpio pwd_submit_in =	{GPIO_IND,  PIN_7};
 //D8 wires_in0
 struct gpio pwd_up_in =		{GPIO_IND,  PIN_9};

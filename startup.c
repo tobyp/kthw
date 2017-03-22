@@ -50,7 +50,7 @@ __attribute__((section(".vectors"))) const uint32_t * __vectors[] = {
 	(const uint32_t *)&__isr_svc,
 	(const uint32_t *)&__isr_debug_monitor,
 	(const uint32_t *)0,
-	(const uint32_t *)&__isr_pending_svc,
+	(const uint32_t *)&__isr_pendsv,
 	(const uint32_t *)&__isr_systick,
 
 	(const uint32_t *)&__isr_window_watchdog,

@@ -8,7 +8,7 @@ CFLAGS=-I./ -std=c11 -fno-common -g -mcpu=cortex-m4 -mthumb -Wextra -Wall -Wno-m
 ASFLAGS=-mcpu=cortex-m4
 LDFLAGS=-nostartfiles -T stm32f407vg.ld
 
-all: main.bin
+all: main.elf
 
 clean:
 	rm -f *.bin *.elf *.o

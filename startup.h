@@ -16,7 +16,7 @@ void __isr_bus_fault() __attribute__((weak, alias("__isr_fault")));
 void __isr_usage_fault() __attribute__((weak, alias("__isr_fault")));
 void __isr_svc() __attribute__((weak, alias("__isr_default")));
 void __isr_debug_monitor() __attribute__((weak, alias("__isr_default")));
-void __isr_pending_svc() __attribute__((weak, alias("__isr_default")));
+void __isr_pendsv() __attribute__((weak, alias("__isr_default")));
 void __isr_systick() __attribute__((weak, alias("__isr_default")));
 void __isr_window_watchdog() __attribute__((weak, alias("__isr_default")));
 void __isr_pvd() __attribute__((weak, alias("__isr_default")));
