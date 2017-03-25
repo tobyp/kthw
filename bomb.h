@@ -38,11 +38,13 @@ struct module {
 struct bomb {
 	struct gpio * in_flags[2];
 	struct shreg * sr_flags[2];
-	struct shreg * sr_strikes;
+	struct shreg * sr_strikes_completion;
 	struct shreg * sr_timer[4];
+	struct gpio * buzzer;
 
 	uint32_t timer;
 	uint8_t strike_limit;
+	uint16_t buzzer_timer;
 
 	uint8_t flags;
 	uint8_t flags_time;

@@ -48,12 +48,10 @@ struct gpio timer0_ser =	{GPIO_OUTB, PIN_15};
 
 #define morse_adc =			{GPIO_INC,  PIN_0};
 #define pwd_adc_pos =		{GPIO_INC,  PIN_1};
-struct gpio wires_in0 =		{GPIO_IND,  PIN_8}; //D8
-struct gpio wires_in1 =		{GPIO_INC,  PIN_2};
-struct gpio wires_in2 =		{GPIO_INC,  PIN_3};
-struct gpio wires_in3 =		{GPIO_INC,  PIN_4};
-struct gpio wires_in4 =		{GPIO_INC,  PIN_5};
-struct gpio wires_in5 =		{GPIO_INC,  PIN_6};
+struct gpio wires_in =		{GPIO_IND,  PIN_8}; //D8
+struct gpio wires_ser =		{GPIO_OUTC, PIN_2};
+struct gpio buzzer =		{GPIO_OUTC, PIN_3};
+//C4-6
 struct gpio cap_in =		{GPIO_INC,  PIN_7};
 struct gpio cap0_ser =		{GPIO_OUTC, PIN_8};
 struct gpio cap1_ser =		{GPIO_OUTC, PIN_9};
@@ -90,7 +88,7 @@ enum {
 	SR_TIMER1,	//seconds (tens), use util.h's sevenseg_digits
 	SR_TIMER2,	//minutes (ones), use util.h's sevenseg_digits
 	SR_TIMER3,	//minutes (tens), use util.h's sevenseg_digits
-	SR_STRIKES,	//(MSB) strike 8, ... , strike 1 (LSB)
+	SR_STRIKE_COMPLETE,	//(MSB) complete 5..1, strike 3..1 (LSB)
 	SR_FLAGS0,	//(MSB) {<don't care>, <don't care>, BOMB_LBL_FRK, BOMB_PARPORT, BOMB_2BATS, BOMB_SER_EVEN, BOMB_SER_VOW, <don't care>} (LSB)
 	SR_FLAGS1,	//(MSB) 5 bits = time / 30s; 2 bits = strike limit
 
@@ -113,6 +111,8 @@ enum {
 	SR_MEM_BTN,
 
 	SR_PWD_LCD,
+
+	SR_WIRES,
 };
 
 struct shreg shregs[] = {
@@ -143,6 +143,8 @@ struct shreg shregs[] = {
 	{&mem_btn_ser, 0},
 
 	{&pwd_lcd_ser, 0},
+
+	{&wires_ser, 0},
 };
 
 enum {
@@ -159,12 +161,12 @@ struct lcd pwd_lcd = {&pwd_lcd_rs, &pwd_lcd_en, &shregs[SR_PWD_LCD], LCD_NONE, 0
 
 struct morse morse = {MORSE_MOD_INIT, &morse_led, &morse_btn, &adcs[ADC_MORSE], {&shregs[SR_MORSE_FREQ0], &shregs[SR_MORSE_FREQ1], &shregs[SR_MORSE_FREQ2], &shregs[SR_MORSE_FREQ3]}};
 struct simonsays simonsays = {SIMONSAYS_MOD_INIT, &simonsays_btn, &shregs[SR_SIMON_SAYS]};
-struct wires wires = {WIRES_MOD_INIT, {&wires_in0, &wires_in1, &wires_in2, &wires_in3, &wires_in4, &wires_in5}};
+struct wires wires = {WIRES_MOD_INIT, &shregs[SR_WIRES], &wires_in};
 struct capacitor capacitor = {CAPACITOR_MOD_INIT, &cap_in, {&shregs[SR_CAP0], &shregs[SR_CAP1]}};
 struct memory memory = {MEMORY_MOD_INIT, &mem_btn_in, &shregs[SR_MEM_BTN], &shregs[SR_MEM_STAGE], &shregs[SR_MEM_DISP], {&shregs[SR_MEM0], &shregs[SR_MEM1], &shregs[SR_MEM2], &shregs[SR_MEM3]}};
 struct password password = {PASSWORD_MOD_INIT, &pwd_submit_in, {&pwd_up_in, &pwd_down_in}, &adcs[ADC_PWD_POS], &pwd_lcd};
 
-struct bomb bomb = {{&DUMMY, &DUMMY}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKES], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}};
+struct bomb bomb = {{&DUMMY, &DUMMY}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKE_COMPLETE], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}, &buzzer};
 
 int main() {
 	/* RCC/PLL */
@@ -195,9 +197,9 @@ int main() {
 	*GPIOx_PUPDR(GPIOB_BASE) |=  0x08800000ul; //B11,13 pull-down
 
 	*GPIOx_MODER(GPIOC_BASE) &= ~0xfffffff0ul;
-	*GPIOx_MODER(GPIOC_BASE) |=  0x55550000ul; //C2-7 in, C8-15 out
-	*GPIOx_PUPDR(GPIOC_BASE) &= ~0x0000fff0ul;
-	*GPIOx_PUPDR(GPIOC_BASE) |=  0x0000aaa0ul; //C2-7 pull-down
+	*GPIOx_MODER(GPIOC_BASE) |=  0x55550050ul; //C2-3 out, C7 in, C8-15 out
+	*GPIOx_PUPDR(GPIOC_BASE) &= ~0x0000c000ul;
+	*GPIOx_PUPDR(GPIOC_BASE) |=  0x00008000ul; //C7 pull-down
 
 	*GPIOx_MODER(GPIOD_BASE) &= ~0x0303f3fful;
 	*GPIOx_MODER(GPIOD_BASE) |=  0x01000154ul; //D0,6-9 in, D1-4 out, D12 (onboard LED) out

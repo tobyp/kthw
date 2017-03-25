@@ -7,9 +7,12 @@
 
 struct wires {
 	struct module module;
-	struct gpio * in_wire[6];
+	struct shreg * shreg;
+	struct gpio * in;
 
+	uint8_t ticks;
 	uint8_t morituri;
+	uint8_t removed; //removing an already-removed wire should do fuck all.
 	uint8_t cache;
 };
 
