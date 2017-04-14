@@ -1,44 +1,87 @@
 #include "password.h"
 
 struct word words[] = {
-	{"ABOUT"}, /* about */
-	{"AFTER"}, /* after */
-	{"AGAIN"}, /* again */
-	{"BELOW"}, /* below */
-	{"COULD"}, /* could */
-	{"EVERY"}, /* every */
-	{"FIRST"}, /* first */
-	{"FOUND"}, /* found */
-	{"GREAT"}, /* great */
-	{"HOUSE"}, /* house */
-	{"LARGE"}, /* large */
-	{"LEARN"}, /* learn */
-	{"NEVER"}, /* never */
-	{"OTHER"}, /* other */
-	{"PLACE"}, /* place */
-	{"PLANT"}, /* plant */
-	{"POINT"}, /* point */
-	{"RIGHT"}, /* right */
-	{"SMALL"}, /* small */
-	{"SOUND"}, /* sound */
-	{"SPELL"}, /* spell */
-	{"STILL"}, /* still */
-	{"STUDY"}, /* study */
-	{"THEIR"}, /* their */
-	{"THERE"}, /* there */
-	{"THESE"}, /* these */
-	{"THING"}, /* thing */
-	{"THINK"}, /* think */
-	{"THREE"}, /* three */
-	{"WATER"}, /* water */
-	{"WHERE"}, /* where */
-	{"WHICH"}, /* which */
-	{"WORLD"}, /* world */
-	{"WOULD"}, /* would */
-	{"WRITE"}, /* write */
+	{"ABOUT"},
+	{"AFTER"},
+	{"AGAIN"},
+	{"BELOW"},
+	{"COULD"},
+	{"EVERY"},
+	{"FIRST"},
+	{"FOUND"},
+	{"GREAT"},
+	{"HOUSE"},
+	{"LARGE"},
+	{"LEARN"},
+	{"NEVER"},
+	{"OTHER"},
+	{"PLACE"},
+	{"PLANT"},
+	{"POINT"},
+	{"RIGHT"},
+	{"SMALL"},
+	{"SOUND"},
+	{"SPELL"},
+	{"STILL"},
+	{"STUDY"},
+	{"THEIR"},
+	{"THERE"},
+	{"THESE"},
+	{"THING"},
+	{"THINK"},
+	{"THREE"},
+	{"WATER"},
+	{"WHERE"},
+	{"WHICH"},
+	{"WORLD"},
+	{"WOULD"},
+	{"WRITE"},
 };
 
+char impossibles[5][15] = {
+	"DIJKMQUVXYZ",
+	"CDJKNQSUWXYZ",
+	"BCDFJKMNPQSWXYZ",
+	"BFJKMPQVWXYZ",
+	"ABCFIJMOPQSTVXZ",
+};
 
+//letters[pos][offset]
+
+static void sort_char(char * array, size_t length) {
+	for (size_t i=1; i<length; ++i) {
+		for (size_t j=i; j<length; ++j) {
+			if (array[i-1] > array[i]) {
+				char tmp = array[i-1];
+				array[i-1] = array[i];
+				array[i] = tmp;
+			}
+		}
+	}
+}
+
+static void populate_cylinders(struct password * password) {
+	uint8_t possibilities[sizeof(words)/sizeof(struct word)];
+
+	password->letters[0][0] = password->word->chars[0];
+	password->letters[1][0] = password->word->chars[1];
+	password->letters[2][0] = password->word->chars[2];
+	password->letters[3][0] = password->word->chars[3];
+	password->letters[4][0] = password->word->chars[4];
+
+	for (uint8_t i=0; i<5; ++i) {
+		password->letters[i][1] = rnd() % 26 + 'A';
+		password->letters[i][2] = rnd() % 26 + 'A';
+		password->letters[i][3] = rnd() % 26 + 'A';
+		password->letters[i][4] = rnd() % 26 + 'A';
+		password->letters[i][5] = rnd() % 26 + 'A';
+		sort_char(password->letters[i], 6);
+	}
+
+	for (uint8_t j=0; j<sizeof(possibilities); ++j) {
+		
+	}
+}
 
 int password_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct password * password = (struct password *)module;
@@ -52,19 +95,7 @@ int password_prepare_tick(struct bomb * bomb, struct module * module) {
 			(*password->in_updown[1]->reg & password->in_updown[1]->mask ? 0x2 : 0) |
 			(*password->in_updown[0]->reg & password->in_updown[0]->mask ? 0x1 : 0);
 
-		password->letters[0][0] = password->word->chars[0];
-		password->letters[1][0] = password->word->chars[1];
-		password->letters[2][0] = password->word->chars[2];
-		password->letters[3][0] = password->word->chars[3];
-		password->letters[4][0] = password->word->chars[4];
-
-		for (uint8_t i=1; i<6; ++i) {
-			password->letters[0][i] = 'X';
-			password->letters[1][i] = 'X';
-			password->letters[2][i] = 'X';
-			password->letters[3][i] = 'X';
-			password->letters[4][i] = 'X';
-		}
+		populate_cylinders(password);
 
 		password->selections[0] = rnd() % 6;
 		password->selections[1] = rnd() % 6;
