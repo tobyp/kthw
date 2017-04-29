@@ -12,9 +12,8 @@ struct word {
 
 struct password {
 	struct module module;
-	struct gpio * in_submit;
-	struct gpio * in_updown[2]; //up, down
-	struct adc * adc_position;
+	struct gpio * in;
+	struct shreg * ser;
 	struct lcd * lcd;
 
 	struct word * word;

@@ -12,76 +12,7 @@
 #include "memory.h"
 #include "password.h"
 
-#define PIN_0	0x0001ul
-#define PIN_1	0x0002ul
-#define PIN_2	0x0004ul
-#define PIN_3	0x0008ul
-#define PIN_4	0x0010ul
-#define PIN_5	0x0020ul
-#define PIN_6	0x0040ul
-#define PIN_7	0x0080ul
-#define PIN_8	0x0100ul
-#define PIN_9	0x0200ul
-#define PIN_10	0x0400ul
-#define PIN_11	0x0800ul
-#define PIN_12	0x1000ul
-#define PIN_13	0x2000ul
-#define PIN_14	0x4000ul
-#define PIN_15	0x8000ul
-
-#define GPIO_OUTB	GPIOx_ODR(GPIOB_BASE)
-#define GPIO_INB	GPIOx_IDR(GPIOB_BASE)
-#define GPIO_OUTC	GPIOx_ODR(GPIOC_BASE)
-#define GPIO_INC	GPIOx_IDR(GPIOC_BASE)
-#define GPIO_OUTD	GPIOx_ODR(GPIOD_BASE)
-#define GPIO_IND	GPIOx_IDR(GPIOD_BASE)
-
-
-struct gpio simonsays_ser =	{GPIO_OUTB, PIN_8};
-struct gpio sr_srclk =		{GPIO_OUTB, PIN_9};
-struct gpio sr_rclk =		{GPIO_OUTB, PIN_10};
-struct gpio simonsays_btn =	{GPIO_INB,  PIN_11};
-struct gpio morse_led =		{GPIO_OUTB, PIN_12};
-struct gpio morse_btn =		{GPIO_INB,  PIN_13};
-struct gpio strikes_ser =	{GPIO_OUTB, PIN_14};
-struct gpio timer0_ser =	{GPIO_OUTB, PIN_15};
-
-#define morse_adc =			{GPIO_INC,  PIN_0};
-#define pwd_adc_pos =		{GPIO_INC,  PIN_1};
-struct gpio wires_in =		{GPIO_IND,  PIN_8}; //D8
-struct gpio wires_ser =		{GPIO_OUTC, PIN_2};
-struct gpio buzzer =		{GPIO_OUTC, PIN_3};
-//C4-6
-struct gpio cap_in =		{GPIO_INC,  PIN_7};
-struct gpio cap0_ser =		{GPIO_OUTC, PIN_8};
-struct gpio cap1_ser =		{GPIO_OUTC, PIN_9};
-struct gpio mem0_ser =		{GPIO_OUTC, PIN_10};
-struct gpio mem1_ser =		{GPIO_OUTC, PIN_11};
-struct gpio mem2_ser =		{GPIO_OUTC, PIN_12};
-struct gpio mem3_ser =		{GPIO_OUTC, PIN_13};
-struct gpio mem_disp_ser =	{GPIO_OUTC, PIN_14};
-struct gpio mem_btn_ser =	{GPIO_OUTC, PIN_15};
-
-struct gpio mem_btn_in =	{GPIO_IND,  PIN_0};
-struct gpio mem_stage_ser =	{GPIO_OUTD, PIN_1};
-struct gpio pwd_lcd_ser =	{GPIO_OUTD, PIN_2};
-struct gpio pwd_lcd_rs =	{GPIO_OUTD, PIN_3};
-struct gpio pwd_lcd_en =	{GPIO_OUTD, PIN_4};
-//D5: STM32F4Discovery: red LED
-struct gpio pwd_down_in =	{GPIO_IND,  PIN_6};
-struct gpio pwd_submit_in =	{GPIO_IND,  PIN_7};
-//D8 wires_in0
-struct gpio pwd_up_in =		{GPIO_IND,  PIN_9};
-//D12: STM32F4Discovery: green LED
-//D13: STM32F4Discovery: orange LED
-//D14: STM32F4Discovery: red LED
-//D15: STM32F4Discovery: blue LED
-//#define SR_OE
-//#define SR_SRCLR
-
-uint32_t dummy;
-struct gpio DUMMY = {&dummy, 0};
-
+#include "pins.inc.h"
 
 enum {
 	SR_TIMER0,	//seconds (ones), use util.h's sevenseg_digits
@@ -89,7 +20,7 @@ enum {
 	SR_TIMER2,	//minutes (ones), use util.h's sevenseg_digits
 	SR_TIMER3,	//minutes (tens), use util.h's sevenseg_digits
 	SR_STRIKE_COMPLETE,	//(MSB) complete 5..1, strike 3..1 (LSB)
-	SR_FLAGS0,	//(MSB) {<don't care>, <don't care>, BOMB_LBL_FRK, BOMB_PARPORT, BOMB_2BATS, BOMB_SER_EVEN, BOMB_SER_VOW, <don't care>} (LSB)
+	SR_FLAGS0,	//(MSB) {<don't care>, <don't care>, FL_LBL_FRK, FL_PARPORT, FL_2BATS, FL_SER_EVEN, FL_SER_VOW, <don't care>} (LSB)
 	SR_FLAGS1,	//(MSB) 5 bits = time / 30s; 2 bits = strike limit
 
 	SR_SIMON_SAYS,	// (MSB) {Buttons (GRYB), LEDs (GRYB)} (LSB)
@@ -111,62 +42,62 @@ enum {
 	SR_MEM_BTN,
 
 	SR_PWD_LCD,
+	SR_PWD_SER,
 
 	SR_WIRES,
 };
 
 struct shreg shregs[] = {
-	{&timer0_ser, 0}, //timer0
-	{&DUMMY, 0}, //timer1
-	{&DUMMY, 0}, //timer2
-	{&DUMMY, 0}, //timer3
-	{&strikes_ser, 0}, //strikes
-	{&DUMMY, 0}, //flags0 (vowel, even, >=2 bats, parallel, FRK)
-	{&DUMMY, 0}, //flags1 (5 bits time, 3 bits strikes)
+	{&pins[GP_TIMER0_SER], 0}, //timer0
+	{&pins[GP_TIMER1_SER], 0}, //timer1
+	{&pins[GP_TIMER2_SER], 0}, //timer2
+	{&pins[GP_TIMER3_SER], 0}, //timer3
+	{&pins[GP_STRIKES_SER], 0}, //strikes
+	{&pins[GP_FLAGS0_SER], 0}, //flags0 (vowel, even, >=2 bats, parallel, FRK)
+	{&pins[GP_FLAGS1_SER], 0}, //flags1 (5 bits time, 3 bits strikes)
 
-	{&simonsays_ser, 0},
+	{&pins[GP_SIMONSAYS_SER], 0},
 
-	{&DUMMY, 0}, //morse_freq0
-	{&DUMMY, 0}, //morse_freq1
-	{&DUMMY, 0}, //morse_freq2
-	{&DUMMY, 0}, //morse_freq3
+	{&pins[GP_MORSE_FREQ0_SER], 0}, //morse_freq0
+	{&pins[GP_MORSE_FREQ1_SER], 0}, //morse_freq1
+	{&pins[GP_MORSE_FREQ2_SER], 0}, //morse_freq2
+	{&pins[GP_MORSE_FREQ3_SER], 0}, //morse_freq3
 
-	{&cap0_ser, 0},
-	{&cap1_ser, 0},
+	{&pins[GP_CAP0_SER], 0},
+	{&pins[GP_CAP1_SER], 0},
 
-	{&mem0_ser, 0},
-	{&mem1_ser, 0},
-	{&mem2_ser, 0},
-	{&mem3_ser, 0},
-	{&mem_disp_ser, 0},
-	{&mem_stage_ser, 0},
-	{&mem_btn_ser, 0},
+	{&pins[GP_MEM0_SER], 0},
+	{&pins[GP_MEM1_SER], 0},
+	{&pins[GP_MEM2_SER], 0},
+	{&pins[GP_MEM3_SER], 0},
+	{&pins[GP_MEM_DISP_SER], 0},
+	{&pins[GP_MEM_STAGE_SER], 0},
+	{&pins[GP_MEM_BTN_SER], 0},
 
-	{&pwd_lcd_ser, 0},
+	{&pins[GP_PWD_LCD_SER], 0},
+	{&pins[GP_PWD_SER], 0},
 
-	{&wires_ser, 0},
+	{&pins[GP_WIRES_SER], 0},
 };
 
 enum {
 	ADC_MORSE,
-	ADC_PWD_POS,
 };
 
 struct adc adcs[] = {
 	{10, 0},
-	{11, 0},
 };
 
-struct lcd pwd_lcd = {&pwd_lcd_rs, &pwd_lcd_en, &shregs[SR_PWD_LCD], LCD_NONE, 0};
+struct lcd pwd_lcd = {&pins[GP_PWD_LCD_RS], &pins[GP_PWD_LCD_EN], &shregs[SR_PWD_LCD], LCD_NONE, 0};
 
-struct morse morse = {MORSE_MOD_INIT, &morse_led, &morse_btn, &adcs[ADC_MORSE], {&shregs[SR_MORSE_FREQ0], &shregs[SR_MORSE_FREQ1], &shregs[SR_MORSE_FREQ2], &shregs[SR_MORSE_FREQ3]}};
-struct simonsays simonsays = {SIMONSAYS_MOD_INIT, &simonsays_btn, &shregs[SR_SIMON_SAYS]};
-struct wires wires = {WIRES_MOD_INIT, &shregs[SR_WIRES], &wires_in};
-struct capacitor capacitor = {CAPACITOR_MOD_INIT, &cap_in, {&shregs[SR_CAP0], &shregs[SR_CAP1]}};
-struct memory memory = {MEMORY_MOD_INIT, &mem_btn_in, &shregs[SR_MEM_BTN], &shregs[SR_MEM_STAGE], &shregs[SR_MEM_DISP], {&shregs[SR_MEM0], &shregs[SR_MEM1], &shregs[SR_MEM2], &shregs[SR_MEM3]}};
-struct password password = {PASSWORD_MOD_INIT, &pwd_submit_in, {&pwd_up_in, &pwd_down_in}, &adcs[ADC_PWD_POS], &pwd_lcd};
+struct morse morse = {MORSE_MOD_INIT, &pins[GP_MORSE_LED], &pins[GP_MORSE_BTN], &adcs[ADC_MORSE], {&shregs[SR_MORSE_FREQ0], &shregs[SR_MORSE_FREQ1], &shregs[SR_MORSE_FREQ2], &shregs[SR_MORSE_FREQ3]}};
+struct simonsays simonsays = {SIMONSAYS_MOD_INIT, &pins[GP_SIMONSAYS_BTN], &shregs[SR_SIMON_SAYS]};
+struct wires wires = {WIRES_MOD_INIT, &shregs[SR_WIRES], &pins[GP_WIRES_IN]};
+struct capacitor capacitor = {CAPACITOR_MOD_INIT, &pins[GP_CAP_IN], {&shregs[SR_CAP0], &shregs[SR_CAP1]}};
+struct memory memory = {MEMORY_MOD_INIT, &pins[GP_MEM_BTN_IN], &shregs[SR_MEM_BTN], &shregs[SR_MEM_STAGE], &shregs[SR_MEM_DISP], {&shregs[SR_MEM0], &shregs[SR_MEM1], &shregs[SR_MEM2], &shregs[SR_MEM3]}};
+struct password password = {PASSWORD_MOD_INIT, &pins[GP_PWD_IN], &shregs[SR_PWD_SER], &pwd_lcd};
 
-struct bomb bomb = {{&DUMMY, &DUMMY}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKE_COMPLETE], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}, &buzzer};
+struct bomb bomb = {{&pins[GP_FLAGS0_IN], &pins[GP_FLAGS1_IN]}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKE_COMPLETE], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}, &pins[GP_BUZZER]};
 
 int main() {
 	/* RCC/PLL */
@@ -189,28 +120,26 @@ int main() {
 	while ((*RCC_CR & RCC_CR_PLLRDY) == 0) { }
 
 	/* GPIO */
-	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIODEN;
+	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_GPIOHEN;
 
-	*GPIOx_MODER(GPIOB_BASE) &= ~0xffff0000ul;
-	*GPIOx_MODER(GPIOB_BASE) |=  0x51150000ul; //B8-10,12,14-15 out, B11,13 in
-	*GPIOx_PUPDR(GPIOB_BASE) &= ~0x0cc00000ul;
-	*GPIOx_PUPDR(GPIOB_BASE) |=  0x08800000ul; //B11,13 pull-down
-
-	*GPIOx_MODER(GPIOC_BASE) &= ~0xfffffff0ul;
-	*GPIOx_MODER(GPIOC_BASE) |=  0x55550050ul; //C2-3 out, C7 in, C8-15 out
-	*GPIOx_PUPDR(GPIOC_BASE) &= ~0x0000c000ul;
-	*GPIOx_PUPDR(GPIOC_BASE) |=  0x00008000ul; //C7 pull-down
-
-	*GPIOx_MODER(GPIOD_BASE) &= ~0x0303f3fful;
-	*GPIOx_MODER(GPIOD_BASE) |=  0x01000154ul; //D0,6-9 in, D1-4 out, D12 (onboard LED) out
-	*GPIOx_PUPDR(GPIOD_BASE) &= ~0x000ff003ul;
-	*GPIOx_PUPDR(GPIOD_BASE) |=  0x000aa002ul; //D0,6-9 pull-down
+	for (uint32_t i=0; i<sizeof(pins)/(sizeof(struct gpio)); ++i) {
+		struct gpio * p = &pins[i];
+		uint32_t mode_mask = GM_MASK << (p->pin << 1);
+		uint32_t mode = p->mode << (p->pin << 1);
+		*GPIOx_MODER(p->base) &= ~mode_mask;
+		*GPIOx_MODER(p->base) |= mode;
+		if (p->mode == GM_IN) {
+			*GPIOx_PUPDR(p->base) &= ~mode_mask;
+			uint32_t pupd = GPP_DOWN << (p->pin << 1);
+			*GPIOx_PUPDR(p->base) |= pupd;
+		}
+	}
 
 	/* ADC */
 	*RCC_AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
 
 	*GPIOx_MODER(GPIOC_BASE) &= ~0xful;
-	*GPIOx_MODER(GPIOC_BASE) |= 0xful; //C0-1 analog
+	*GPIOx_MODER(GPIOC_BASE) |=  0xful; //C0-1 analog
 
 	*RCC_APB2ENR |= RCC_APB2ENR_ADC1EN;
 
@@ -250,12 +179,12 @@ int main() {
 	delay(150);
 
 	/* BOMB */
-	bomb_add_module(&bomb, &simonsays.module);
-	bomb_add_module(&bomb, &morse.module);
-	bomb_add_module(&bomb, &wires.module);
 	bomb_add_module(&bomb, &capacitor.module);
-	bomb_add_module(&bomb, &memory.module);
 	bomb_add_module(&bomb, &password.module);
+	bomb_add_module(&bomb, &memory.module);
+	bomb_add_module(&bomb, &wires.module);
+	bomb_add_module(&bomb, &morse.module);
+	bomb_add_module(&bomb, &simonsays.module);
 
 	/* SysTick */
 	*NVIC_PRIn(3) &= 0xff000000ul;
@@ -286,22 +215,21 @@ void __isr_systick() {
 	}
 	for (uint8_t i=0; i<8; ++i) {
 		for (uint8_t j=0; j<(sizeof(shregs)/sizeof(struct shreg)); ++j) {
-			if (shregs[j].value_cache & 0x1) *shregs[j].ser->reg |= shregs[j].ser->mask;
-			else *shregs[j].ser->reg &= ~shregs[j].ser->mask;
+			gpio_set(shregs[j].ser, shregs[j].value_cache & 0x1);
 			shregs[j].value_cache >>= 1;
 		}
-		*sr_srclk.reg |= sr_srclk.mask; *sr_srclk.reg &= ~sr_srclk.mask;
+		gpio_set(&pins[GP_SR_SRCLK], 1); gpio_set(&pins[GP_SR_SRCLK], 0);
 	}
-	*sr_rclk.reg |= sr_rclk.mask; *sr_rclk.reg &= ~sr_rclk.mask;
+	gpio_set(&pins[GP_SR_RCLK], 1); gpio_set(&pins[GP_SR_RCLK], 0);
 	//lcd (part 2)
 	if (pwd_lcd.mode < LCD_NONE) {
-		*pwd_lcd.lcd_en->reg |=  pwd_lcd.lcd_en->mask;
-		if (pwd_lcd.mode) *pwd_lcd.lcd_rs->reg |= pwd_lcd.lcd_rs->mask;
-		else *pwd_lcd.lcd_rs->reg &= ~pwd_lcd.lcd_rs->mask;
+		gpio_set(pwd_lcd.lcd_en, 1);
+		if (pwd_lcd.mode) gpio_set(pwd_lcd.lcd_rs, 1);
+		else gpio_set(pwd_lcd.lcd_rs, 0);
 
 		delay(1);
 
-		*pwd_lcd.lcd_en->reg &= ~pwd_lcd.lcd_en->mask;
+		gpio_set(pwd_lcd.lcd_en, 0);
 		pwd_lcd.mode = LCD_NONE;
 	}
 

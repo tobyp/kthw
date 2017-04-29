@@ -54,7 +54,7 @@ static inline void populate(struct memory * memory) {
 	memory->buttons[j] = memory->buttons[1];
 	memory->buttons[1] = temp;
 
-	printf("[%s] stage=%d display=%d buttons=[%d,%d,%d,%d]\n", memory->module.name, memory->stage, memory->display + 1, memory->buttons[0] + 1, memory->buttons[1] + 1, memory->buttons[2] + 1, memory->buttons[3] + 1);
+	printf("[%s] stage=%d display=%d buttons=[%d,%d,%d,%d] expect=lbl%d\n", memory->module.name, memory->stage, memory->display + 1, memory->buttons[0] + 1, memory->buttons[1] + 1, memory->buttons[2] + 1, memory->buttons[3] + 1, expected_lbl(memory) + 1);
 }
 
 int memory_prepare_tick(struct bomb * bomb, struct module * module) {
@@ -67,6 +67,8 @@ int memory_prepare_tick(struct bomb * bomb, struct module * module) {
 	return 1;
 }
 
+#define CORRECT_BTN(x) (3-(x))  //buttons are 3210, left to right
+
 int memory_tick(struct bomb * bomb, struct module * module) {
 	struct memory * memory = (struct memory *)module;
 
@@ -76,20 +78,20 @@ int memory_tick(struct bomb * bomb, struct module * module) {
 	memory->sr_btn_lbls[2]->value = sevenseg_digits[memory->buttons[2] + 1];
 	memory->sr_btn_lbls[3]->value = sevenseg_digits[memory->buttons[3] + 1];
 
-	uint32_t poll_index = memory->ticks;
+	uint32_t poll_index = CORRECT_BTN(memory->ticks);
 	uint8_t poll_mask = 1 << poll_index;
-	uint8_t poll_value = (*memory->in_btn->reg & memory->in_btn->mask) ? poll_mask : 0;
+	uint8_t poll_value = (gpio_get(memory->in_btn)) ? poll_mask : 0;
 	if ((memory->btn_cache & poll_mask) ^ poll_value) {
 		memory->btn_cache = (memory->btn_cache & ~poll_mask) | poll_value;
 		if (poll_value) { //button is now pushed
-			if (poll_index == expected_lbl(memory)) {
+			if (memory->buttons[poll_index] == expected_lbl(memory)) {
 				memory->lbl_hist[memory->stage] = memory->buttons[poll_index];
 				memory->pos_hist[memory->stage] = poll_index;
 				memory->stage++;
 				if (memory->stage == 5) return 1;
 			}
 			else {
-				strike(bomb);
+				strike(bomb, module);
 				memory->stage = 0;
 			}
 			populate(memory);

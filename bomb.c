@@ -2,6 +2,10 @@
 
 #include "util.h"
 
+#define BOMB_FLAGS_READY 0x1
+#define BOMB_READY 0x2
+#define BOMB_DONE 0x4
+
 void bomb_init(struct bomb * bomb, struct shreg * sr_flags0, struct gpio * in_flags0, struct shreg * sr_flags1, struct gpio * in_flags1, struct shreg * timer0, struct shreg * timer1, struct shreg * timer2, struct shreg * timer3, struct shreg * strikes) {
 	bomb->sr_timer[0] = timer0;
 	bomb->sr_timer[1] = timer1;
@@ -29,11 +33,11 @@ void bomb_add_module(struct bomb * bomb, struct module * module) {
 	bomb->modules = module;
 }
 
-void strike(struct bomb * bomb) {
+void strike(struct bomb * bomb, struct module * module) {
 	bomb->strikes++;
-	*bomb->buzzer->reg |= bomb->buzzer->mask;
 	bomb->buzzer_timer = STRIKE_BUZZER_TICKS;
-	printf("[bomb] strikes=%d\n", bomb->strikes);
+	gpio_set(bomb->buzzer, 1);
+	printf("[bomb] strike %d from %s\n", bomb->strikes, module->name);
 }
 
 void explode(struct bomb * bomb) {
@@ -49,29 +53,37 @@ static void bomb_reset(struct bomb * bomb) {
 }
 
 void bomb_prepare_tick(struct bomb * bomb) {
-	uint8_t fl0 = (*bomb->in_flags[0]->reg & bomb->in_flags[0]->mask) ? 1 : 0;
-	uint8_t fl1 = (*bomb->in_flags[1]->reg & bomb->in_flags[1]->mask) ? 1 : 0;
+	uint8_t fl0 = gpio_get(bomb->in_flags[0]);
+	uint8_t fl1 = gpio_get(bomb->in_flags[1]);
 
-	bomb->flags = ((bomb->flags << 1) | fl0) & BOMB_EFLAGS_MASK;
-	bomb->flags_time = (bomb->flags_time << 1) | fl1;
-	bomb->flags_read_progress = (bomb->flags_read_progress << 1) | 1;
+	if (bomb->flags_read_progress) {
+		bomb->flags = (bomb->flags << 1) | fl0;
+		bomb->flags_time = (bomb->flags_time << 1) | fl1;
+	}
 
 	if (bomb->flags_read_progress == 0xff) {
-		bomb->flags |= BOMB_FLAGS_READY;
+		bomb->flags_sw |= BOMB_FLAGS_READY;
 
-		bomb->timer = 10 * 60 * TICKS_PER_SEC; //30 * TPS * ((bomb->flags_time & 0xf8) >> 3);
-		bomb->strike_limit = 3; //bomb->flags_time & 0x7;
+		bomb->timer = /* 10 * 60 * TICKS_PER_SEC; //*/ 15 * ((bomb->flags_time >> 2) & 0x3f) * TICKS_PER_SEC;
+		bomb->strike_limit = /* 3; //*/bomb->flags_time & 0x03;
+
+		printf("[bomb] timer=%d strikelimit=%d flags_time=%x flags=%x\n", bomb->timer, bomb->strike_limit, bomb->flags_time, bomb->flags);
+	}
+	else {
+		bomb->sr_flags[0]->value = bomb->sr_flags[1]->value = bomb->flags_read_progress + 1;
+		bomb->flags_read_progress = (bomb->flags_read_progress << 1) | 1;
 	}
 }
 
 void tick(struct bomb * bomb) {
-	if (bomb->flags & BOMB_DONE) return;
+	if (bomb->flags_sw & BOMB_DONE) return;
 
-	if (bomb->flags & BOMB_READY) {
+	if (bomb->flags_sw & BOMB_READY) {
 		if (bomb->timer) bomb->timer--;
 		if (bomb->timer == 0 || bomb->strikes >= bomb->strike_limit) {
-			bomb->flags |= BOMB_DONE;
-			*bomb->buzzer->reg |= bomb->buzzer->mask;
+			bomb->flags_sw |= BOMB_DONE;
+			bomb->sr_strikes_completion->value = 0x7;
+			gpio_set(bomb->buzzer, 1);
 			printf("[bomb] explode\n");
 			bomb_reset(bomb);
 			return;
@@ -80,13 +92,13 @@ void tick(struct bomb * bomb) {
 		if (bomb->buzzer_timer > 0) {
 			bomb->buzzer_timer--;
 			if (bomb->buzzer_timer == 0) {
-				*bomb->buzzer->reg &= ~bomb->buzzer->mask;
+				gpio_set(bomb->buzzer, 0);
 			}
 		}
 
-		uint8_t completion_flags = 0;
-		uint8_t completion_all = 0;
-		uint8_t completion_mask = 0x8;
+		uint32_t completion_flags = 0;
+		uint32_t completion_all = 0;
+		uint32_t completion_mask = 0x1;
 		for (struct module * m = bomb->modules; m != NULL; m = m->next) {
 			if (!(m->flags & MOD_DONE)) {
 				if (m->tick(bomb, m)) {
@@ -96,25 +108,28 @@ void tick(struct bomb * bomb) {
 				}
 			}
 
-			completion_all |= completion_mask;
-			if (m->flags & MOD_DONE) {
-				completion_flags |= completion_mask;
+			if (!(m->flags & MOD_NEEDY)) {
+				completion_all |= completion_mask;
+				if (m->flags & MOD_DONE) {
+					completion_flags |= completion_mask;
+				}
+				completion_mask <<= 1;
 			}
-			completion_mask <<= 1;
 		}
 
 		if (completion_flags == completion_all) {
-			bomb->flags |= BOMB_DONE;
+			bomb->flags_sw |= BOMB_DONE;
 			bomb->buzzer_timer = 0;
-			*bomb->buzzer->reg &= ~bomb->buzzer->mask;
+			gpio_set(bomb->buzzer, 0);
 			printf("[bomb] defused\n");
 			bomb_reset(bomb);
+			bomb->sr_strikes_completion->value = (((1 << bomb->strikes) - 1) & 0x7) | (completion_flags << 3);
 			return;
 		}
 
 		uint32_t secs = bomb->timer / TICKS_PER_SEC;
 		if (bomb->timer % TICKS_PER_SEC == 0) {
-			printf("[bomb] timer=%d\n", secs);
+			printf("[bomb] timer=%d completion=%x/%x\n", secs, completion_flags, completion_all);
 		}
 
 		uint32_t mins = secs / 60 % 100;
@@ -123,10 +138,10 @@ void tick(struct bomb * bomb) {
 		bomb->sr_timer[1]->value = sevenseg_digits[secs / 10 % 10];
 		bomb->sr_timer[2]->value = SEVENSEG_WITH_DOT(sevenseg_digits[mins / 1 % 10]);
 		bomb->sr_timer[3]->value = sevenseg_digits[mins / 10 % 10];
-		bomb->sr_strikes_completion->value = ((1 << bomb->strikes) - 1) & 0x7;
+		bomb->sr_strikes_completion->value = (((1 << bomb->strikes) - 1) & 0x7) | (completion_flags << 3);
 	}
 	else {
-		uint8_t all_ready = 1;
+		uint32_t all_ready = 1;
 		for (struct module * m = bomb->modules; m != NULL; m = m->next) {
 			if (!(m->flags & MOD_READY)) {
 				if (m->prepare_tick) {
@@ -143,13 +158,13 @@ void tick(struct bomb * bomb) {
 			}
 		}
 
-		if (!(bomb->flags & BOMB_FLAGS_READY)) {
+		if (!(bomb->flags_sw & BOMB_FLAGS_READY)) {
 			bomb_prepare_tick(bomb);
 			all_ready = 0;
 		}
 
 		if (all_ready) {
-			bomb->flags |= BOMB_READY;
+			bomb->flags_sw |= BOMB_READY;
 		}
 	}
 }

@@ -8,7 +8,7 @@ int wires_prepare_tick(struct bomb * bomb, struct module * module) {
 	if (wires->ticks != 0) {
 		uint8_t wire_index = (wires->ticks - 1) % 8;
 		uint8_t wire_mask = 1 << wire_index;
-		uint8_t wire_value = (*wires->in->reg & wires->in->mask) ? wire_mask : 0;
+		uint8_t wire_value = (gpio_get(wires->in)) ? wire_mask : 0;
 		wires->morituri |= wire_value;
 	}
 
@@ -32,7 +32,7 @@ int wires_tick(struct bomb * bomb, struct module * module) {
 
 	uint8_t wire_index = wires->ticks % 8;
 	uint8_t wire_mask = 1 << wire_index;
-	uint8_t wire_value = (*wires->in->reg & wires->in->mask) ? wire_mask : 0;
+	uint8_t wire_value = (gpio_get(wires->in)) ? wire_mask : 0;
 
 	if ((wires->cache & wire_mask) ^ wire_value) { //a wire has changed!
 		printf("[%s] wires=%x->", wires->cache);
@@ -49,7 +49,7 @@ int wires_tick(struct bomb * bomb, struct module * module) {
 					}
 				}
 				else {
-					strike(bomb);
+					strike(bomb, module);
 				}
 			}
 		}

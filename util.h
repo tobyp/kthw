@@ -3,16 +3,32 @@
 
 #include <stdint.h>
 
+#include "stm32f407vg.h"
+
 #define NULL ((void*)0)
 
 extern uint8_t sevenseg_digits[];
-#define SEVENSEG_WITH_DOT(x) ((x) & 0xfe)
-#define SEVENSEG_BLANK 0xff
+#define SEVENSEG_WITH_DOT(x) ((x) | 0x80)
+#define SEVENSEG_BLANK 0x00
 
 struct gpio {
-	volatile uint32_t * reg;
-	uint32_t mask;
+	uint32_t base;
+	uint32_t mode;
+	uint8_t pin;
 };
+
+static inline uint32_t gpio_get(struct gpio * p) {
+	return (*GPIOx_IDR(p->base) & (1ul << p->pin)) ? 1 : 0;
+}
+
+static inline void gpio_set(struct gpio * p, uint32_t v) {
+	if (v) {
+		*GPIOx_ODR(p->base) |= (1ul << p->pin);
+	}
+	else {
+		*GPIOx_ODR(p->base) &= ~(1ul << p->pin);
+	}
+}
 
 struct adc {
 	uint8_t channel;
