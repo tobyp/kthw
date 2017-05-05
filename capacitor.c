@@ -1,9 +1,9 @@
 #include "capacitor.h"
 
-int capacitor_prepare_tick(struct bomb * bomb, struct module * module) {
+void capacitor_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct capacitor * capacitor = (struct capacitor *)module;
 
-	module->flags |= MOD_NEEDY;
+	module->flags |= MF_NEEDY;
 	capacitor->charge = 0;
 	capacitor->capacity = CAP_CAPACITY_MIN(bomb->timer) + rnd() % (CAP_CAPACITY_MAX(bomb->timer) - CAP_CAPACITY_MIN(bomb->timer));
 	printf("[%s] capacity=%d\n", module->name, capacitor->capacity);
@@ -11,14 +11,14 @@ int capacitor_prepare_tick(struct bomb * bomb, struct module * module) {
 	capacitor->sr[0]->value = 0;
 	capacitor->sr[1]->value = 0;
 
-	return 1;
+	module->flags |= MF_READY;
 }
 
-int capacitor_tick(struct bomb * bomb, struct module * module) {
+void capacitor_tick(struct bomb * bomb, struct module * module) {
 	struct capacitor * capacitor = (struct capacitor *)module;
 
 	if (capacitor->charge >= capacitor->capacity) {
-		explode(bomb);
+		explode(bomb, module->name);
 	}
 
 	if (gpio_get(capacitor->in_btn)) {
@@ -31,17 +31,12 @@ int capacitor_tick(struct bomb * bomb, struct module * module) {
 	}
 	else {
 		capacitor->charge = clamp(capacitor->charge + CAP_CHARGE_PER_TICK, 0, capacitor->capacity);
-		if (capacitor->charge >= capacitor->capacity) {
-			printf("[%s] overload\n", module->name);
-			explode(bomb);
-		}
 	}
 
 	uint32_t bars = capacitor->charge * 16 / capacitor->capacity;
 	bars = (1ul << bars) - 1;
 	capacitor->sr[0]->value = bars & 0xff;
 	capacitor->sr[1]->value = (bars >> 8) & 0xff;
-	return 0;
 }
 
 void capacitor_reset(struct bomb * bomb, struct module * module) {

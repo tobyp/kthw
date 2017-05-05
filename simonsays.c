@@ -32,7 +32,7 @@ static inline uint8_t simonsays_expected(struct bomb * bomb, struct simonsays * 
 	return expectations[(bomb->flags & FL_SER_VOW) ? 0 : 1][bomb->strikes % 3][simonsays->seq[simonsays->expected_index]];
 }
 
-int simonsays_prepare_tick(struct bomb * bomb, struct module * module) {
+void simonsays_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct simonsays * simonsays = (struct simonsays *)module;
 
 	simonsays->stage_count = 4 + rnd() % 2;
@@ -43,10 +43,10 @@ int simonsays_prepare_tick(struct bomb * bomb, struct module * module) {
 	}
 	printf("\b] expected=%d\n", simonsays_expected(bomb, simonsays));
 
-	return 1;
+	module->flags |= MF_READY;
 }
 
-int simonsays_tick(struct bomb * bomb, struct module * module) {
+void simonsays_tick(struct bomb * bomb, struct module * module) {
 	struct simonsays * simonsays = (struct simonsays *)module;
 
 	uint32_t poll_button = simonsays->ticks % 4;
@@ -62,6 +62,7 @@ int simonsays_tick(struct bomb * bomb, struct module * module) {
 	if (simonsays->button_caches[poll_button] != button) {
 		simonsays->button_caches[poll_button] = button;
 		if (button) {
+			printf("[%s] got button %d\n", module->name, poll_button);
 			uint8_t expected_button = simonsays_expected(bomb, simonsays);
 			if (poll_button == expected_button) { //button was the expected one
 				simonsays->expected_index++;
@@ -71,7 +72,8 @@ int simonsays_tick(struct bomb * bomb, struct module * module) {
 					simonsays->expected_index = 0;
 					simonsays->button_countdown = 0;
 					if (simonsays->stage == simonsays->stage_count) {
-						return 1;
+						module->flags |= MF_COMPLETE;
+						return;
 					}
 				}
 				else {
@@ -102,7 +104,6 @@ int simonsays_tick(struct bomb * bomb, struct module * module) {
 	}
 
 	simonsays->sr->value = v;
-	return 0;
 }
 
 void simonsays_reset(struct bomb * bomb, struct module * module) {

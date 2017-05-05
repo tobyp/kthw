@@ -97,7 +97,7 @@ struct capacitor capacitor = {CAPACITOR_MOD_INIT, &pins[GP_CAP_IN], {&shregs[SR_
 struct memory memory = {MEMORY_MOD_INIT, &pins[GP_MEM_BTN_IN], &shregs[SR_MEM_BTN], &shregs[SR_MEM_STAGE], &shregs[SR_MEM_DISP], {&shregs[SR_MEM0], &shregs[SR_MEM1], &shregs[SR_MEM2], &shregs[SR_MEM3]}};
 struct password password = {PASSWORD_MOD_INIT, &pins[GP_PWD_IN], &shregs[SR_PWD_SER], &pwd_lcd};
 
-struct bomb bomb = {{&pins[GP_FLAGS0_IN], &pins[GP_FLAGS1_IN]}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKE_COMPLETE], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}, &pins[GP_BUZZER]};
+struct bomb bomb = {{&pins[GP_FLAGS0_IN], &pins[GP_FLAGS1_IN]}, {&shregs[SR_FLAGS0], &shregs[SR_FLAGS1]}, &shregs[SR_STRIKE_COMPLETE], {&shregs[SR_TIMER0], &shregs[SR_TIMER1], &shregs[SR_TIMER2], &shregs[SR_TIMER3]}, &pins[GP_BUZZER], &pins[GP_BUZZER2], &pins[GP_CAP_IN]};
 
 int main() {
 	/* RCC/PLL */
@@ -174,6 +174,7 @@ int main() {
 
 	*USARTx_BRR(UART4_BASE) |= 139; //139 is 115200 Bd, 1667 is 9600 Bd at 16 MHz SYSCLK with OVER8=0
 	*USARTx_CR1(UART4_BASE) |= USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
+	uart_enabled = 1;
 
 	/* LCD power up */
 	delay(150);
@@ -189,7 +190,7 @@ int main() {
 	/* SysTick */
 	*NVIC_PRIn(3) &= 0xff000000ul;
 	*NVIC_PRIn(3) |= 0x0f000000ul;
-	*STK_LOAD = 20000ul;
+	*STK_LOAD = 2000000ul / TICKS_PER_SEC;
 	*STK_VAL = 0;
 	*STK_CTRL |= (STK_TICKINT | STK_ENABLE);
 

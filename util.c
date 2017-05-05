@@ -14,7 +14,10 @@ void delay(uint32_t ms) {
 	}
 }
 
+uint8_t uart_enabled = 0; //set to one once uart is ready
+
 static inline void put(char c) {
+	if (!uart_enabled) return;
 	*USARTx_DR(UART4_BASE) = c;
 	while ((*USARTx_SR(UART4_BASE) & USART_SR_TXE) == 0) {
 		__asm__("nop");
@@ -93,6 +96,7 @@ static void vprintf(char const* format, va_list args) {
 }
 
 void printf(char const* format, ...) {
+	if (!uart_enabled) return; //optimization
 	va_list args;
 	va_start(args, format);
 	vprintf(format, args);

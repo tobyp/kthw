@@ -27,10 +27,10 @@ struct password {
 	struct lcd_cache { uint8_t mode; uint8_t cmd; } lcd_cache[6];
 };
 
-int password_prepare_tick(struct bomb * bomb, struct module * module);
-int password_tick(struct bomb * bomb, struct module * module);
+void password_prepare_tick(struct bomb * bomb, struct module * module);
+void password_tick(struct bomb * bomb, struct module * module);
 void password_reset(struct bomb * bomb, struct module * module);
 
-#define PASSWORD_MOD_INIT {0, "password", &password_prepare_tick, &password_tick, &password_reset, NULL}
+#define PASSWORD_MOD_INIT {"password", 0, &password_prepare_tick, &password_tick, &password_reset, NULL}
 
 #endif

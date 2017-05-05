@@ -57,19 +57,19 @@ static inline void populate(struct memory * memory) {
 	printf("[%s] stage=%d display=%d buttons=[%d,%d,%d,%d] expect=lbl%d\n", memory->module.name, memory->stage, memory->display + 1, memory->buttons[0] + 1, memory->buttons[1] + 1, memory->buttons[2] + 1, memory->buttons[3] + 1, expected_lbl(memory) + 1);
 }
 
-int memory_prepare_tick(struct bomb * bomb, struct module * module) {
+void memory_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct memory * memory = (struct memory *)module;
 
 	memory->ticks = 0;
 	memory->stage = 0;
 	populate(memory);
 
-	return 1;
+	module->flags |= MF_READY;
 }
 
 #define CORRECT_BTN(x) (3-(x))  //buttons are 3210, left to right
 
-int memory_tick(struct bomb * bomb, struct module * module) {
+void memory_tick(struct bomb * bomb, struct module * module) {
 	struct memory * memory = (struct memory *)module;
 
 	memory->sr_display->value = sevenseg_digits[memory->display + 1];
@@ -88,7 +88,10 @@ int memory_tick(struct bomb * bomb, struct module * module) {
 				memory->lbl_hist[memory->stage] = memory->buttons[poll_index];
 				memory->pos_hist[memory->stage] = poll_index;
 				memory->stage++;
-				if (memory->stage == 5) return 1;
+				if (memory->stage == 5) {
+					module->flags |= MF_COMPLETE;
+					return;
+				}
 			}
 			else {
 				strike(bomb, module);
@@ -104,8 +107,6 @@ int memory_tick(struct bomb * bomb, struct module * module) {
 	memory->sr_btn->value = poll_mask;
 
 	memory->sr_stage->value = (1 << (memory->stage + 1)) - 1;
-
-	return 0;
 }
 
 void memory_reset(struct bomb * bomb, struct module * module) {

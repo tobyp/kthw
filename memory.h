@@ -23,10 +23,10 @@ struct memory {
 	uint8_t btn_cache;
 };
 
-int memory_prepare_tick(struct bomb * bomb, struct module * module);
-int memory_tick(struct bomb * bomb, struct module * module);
+void memory_prepare_tick(struct bomb * bomb, struct module * module);
+void memory_tick(struct bomb * bomb, struct module * module);
 void memory_reset(struct bomb * bomb, struct module * module);
 
-#define MEMORY_MOD_INIT {0, "memory", &memory_prepare_tick, &memory_tick, &memory_reset, NULL}
+#define MEMORY_MOD_INIT {"memory", 0, &memory_prepare_tick, &memory_tick, &memory_reset, NULL}
 
 #endif

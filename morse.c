@@ -20,16 +20,16 @@ static struct morse_seq morse_seqs[] = {
 	{"beats", {0xea, 0x88, 0xb8, 0xe2, 0xa0, 0x0}, 42, 3600}, /* beats */
 };
 
-int morse_prepare_tick(struct bomb * bomb, struct module * module) {
+void morse_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct morse * morse = (struct morse *)module;
 
 	morse->seq = &morse_seqs[rnd() % (sizeof(morse_seqs) / sizeof(struct morse_seq))];
 	printf("[%s] word=\"%s\" freq=%d\n", module->name, morse->seq->word, morse->seq->freq);
 
-	return 1;
+	module->flags |= MF_READY;
 }
 
-int morse_tick(struct bomb * bomb, struct module * module) {
+void morse_tick(struct bomb * bomb, struct module * module) {
 	struct morse * morse = (struct morse *)module;
 
 	morse->ticks = (morse->ticks + 1) % (TICKS_PER_DOT * morse->seq->bits);
@@ -53,7 +53,8 @@ int morse_tick(struct bomb * bomb, struct module * module) {
 		morse->button_cache = value;
 		if (value) {
 			if (freq >= morse->seq->freq - 1 && freq <= morse->seq->freq + 1) {
-				return 1;
+				module->flags |= MF_COMPLETE;
+				return;
 			}
 			else {
 				strike(bomb, module);
@@ -61,8 +62,6 @@ int morse_tick(struct bomb * bomb, struct module * module) {
 			}
 		}
 	}
-
-	return 0;
 }
 
 void morse_reset(struct bomb * bomb, struct module * module) {

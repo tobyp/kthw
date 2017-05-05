@@ -27,9 +27,9 @@ struct morse {
 	uint8_t button_cache;
 };
 
-int morse_prepare_tick(struct bomb * bomb, struct module * module);
-int morse_tick(struct bomb * bomb, struct module * module);
+void morse_prepare_tick(struct bomb * bomb, struct module * module);
+void morse_tick(struct bomb * bomb, struct module * module);
 void morse_reset(struct bomb * bomb, struct module * module);
 
-#define MORSE_MOD_INIT {0, "morse", &morse_prepare_tick, &morse_tick, &morse_reset, NULL}
+#define MORSE_MOD_INIT {"morse", 0, &morse_prepare_tick, &morse_tick, &morse_reset, NULL}
 #endif

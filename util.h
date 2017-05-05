@@ -55,8 +55,10 @@ struct lcd {
 #define LCD_CMD_CURSOR(x, y) ((x)*64+(y)+128)
 
 void delay(uint32_t ms);
-void printf(char const* format, ...);
 uint32_t rnd();
 uint32_t clamp(uint32_t v, uint32_t lower, uint32_t upper);
+
+extern uint8_t uart_enabled;
+void printf(char const* format, ...);
 
 #endif

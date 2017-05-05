@@ -114,7 +114,7 @@ static void populate_cylinders(struct password * password) {
 	}
 }
 
-int password_prepare_tick(struct bomb * bomb, struct module * module) {
+void password_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct password * password = (struct password *)module;
 	switch (password->ticks) {
 	//init
@@ -197,13 +197,13 @@ int password_prepare_tick(struct bomb * bomb, struct module * module) {
 	default:
 		password->ticks = 0;
 		password->ser->value = 1;
-		return 1;
+		module->flags |= MF_READY;
+		return;
 	}
 	password->ticks++;
-	return 0;
 }
 
-int password_tick(struct bomb * bomb, struct module * module) {
+void password_tick(struct bomb * bomb, struct module * module) {
 	struct password * password = (struct password *)module;
 	uint8_t pos = password->pos;
 	uint8_t sel = password->selections[pos];
@@ -230,10 +230,11 @@ int password_tick(struct bomb * bomb, struct module * module) {
 				for (uint8_t i=0; i<6; ++i) {
 					if (password->letters[i][password->selections[i]] != password->word->chars[i]) {
 						strike(bomb, module);
-						return 0;
+						return;
 					}
 				}
-				return 1;
+				module->flags |= MF_COMPLETE;
+				return;
 			}
 		}
 	}
@@ -270,8 +271,6 @@ int password_tick(struct bomb * bomb, struct module * module) {
 			break;
 		}
 	}
-
-	return 0;
 }
 
 void password_reset(struct bomb * bomb, struct module * module) {

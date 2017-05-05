@@ -5,34 +5,44 @@
 
 #include "util.h"
 
-//bomb flags
-#define FL_SER_VOW 0x1
-#define FL_SER_EVEN 0x2
-#define FL_2BATS 0x4
-#define FL_PARPORT 0x8
-#define FL_LBL_FRK 0x10
+#define TICKS_PER_SEC 100  //updates per second.
 
-//bomb timer/strikes [time * 15s:6bit] [strikes:2bit]
+/* The bomb flag and timer/strike switches are read immediately after startup. Changes after startup are ignored.
+Timer/strikes: 6 bits timer (multiply by 15 seconds) and 2 bits strike limit. Setting either to 0 will immediately explode the bomb. */
+enum bomb_flags {
+	FL_SER_VOW = 0x1,  //the serial number contains a vowel
+	FL_SER_EVEN = 0x2,  //the last digit of the serial number is even
+	FL_2BATS = 0x4,  //the bomb has two or more batteries
+	FL_PARPORT = 0x8,  //the bomb has a parallel port
+	FL_LBL_FRK = 0x10,  //the bomb has a lit indicator labelled "FRK"
+	FL_UART = 0x20,  //enable external uart
+	FL_LENIENT = 0x40,  //don't punish failure with an infinite beep (just a long one)
+	FL_TICKTOCK = 0x80,  //make ticking sounds every second on buzzer2
+};
 
-#define MOD_DONE 0x1
-#define MOD_READY 0x2
-#define MOD_NEEDY 0x4
+enum module_flags {
+	MF_COMPLETE = 0x1,  //the module is completed
+	MF_READY = 0x2,  //the module has finished initializing
+	MF_NEEDY = 0x4,  //the module is needy (i.e. its completion is not required to defuse the bomb)
+};
 
-#define STRIKE_BUZZER_TICKS 25
-#define TICKS_PER_SEC 100
+#define STRIKE_BUZZER_TICKS 25  //how long a strike buzzer sounds
+#define PUNISH_BUZZER_TICKS 200  //how long the buzzer sounds in FL_LENIENT mode (otherwise it's infinite)
+#define TICKTOCK_TICKS 1  //how long to beep every second in FL_TICKTOCK mode (otherwise not at all) 
 
 struct bomb;
 
 struct module {
-	uint8_t flags;
 	char const* name;
-	int (*prepare_tick)(struct bomb * bomb, struct module * module);
-	int (*tick)(struct bomb * bomb, struct module * module);
+	uint8_t flags;
+	void (*prepare_tick)(struct bomb * bomb, struct module * module);
+	void (*tick)(struct bomb * bomb, struct module * module);
 	void (*reset)(struct bomb * bomb, struct module * module);
 	struct module * next;
 };
 
-#define MODULE_INIT(name) {0, (name), NULL, NULL, NULL, NULL}
+#define MODULE_INIT(name) {(name), 0, NULL, NULL, NULL, NULL}
+#define MODULE_INIT_FLAGS(name, flags) {(name), (flags), NULL, NULL, NULL, NULL}
 
 struct bomb {
 	struct gpio * in_flags[2];
@@ -40,23 +50,26 @@ struct bomb {
 	struct shreg * sr_strikes_completion;
 	struct shreg * sr_timer[4];
 	struct gpio * buzzer;
+	struct gpio * buzzer2;
+	struct gpio * start_in;
 
-	uint32_t timer;
+	uint32_t timer;  //countdown in 100s of ticks
+	uint32_t timer_decrement; //timer increases (timer_decrement+100) per tick. increase this to make the timer run faster (e.g. for strikes)
 	uint8_t strike_limit;
-	uint16_t buzzer_timer;
+	uint32_t buzzer_timer;
+	uint32_t buzzer2_timer;
 
+	uint8_t state;
 	uint8_t flags;
-	uint8_t flags_sw;
 	uint8_t flags_time;
 	uint8_t flags_read_progress;
 	uint8_t strikes;
 	struct module * modules;
 };
 
-void bomb_init(struct bomb * bomb, struct shreg * sr_flags0, struct gpio * in_flags0, struct shreg * sr_flags1, struct gpio * in_flags1, struct shreg * timer0, struct shreg * timer1, struct shreg * timer2, struct shreg * timer3, struct shreg * strikes);
 void bomb_add_module(struct bomb * bomb, struct module * module);
 void strike(struct bomb * bomb, struct module * module);
-void explode(struct bomb * bomb);
+void explode(struct bomb * bomb, char const* cause);
 void tick(struct bomb * bomb);
 
 #endif

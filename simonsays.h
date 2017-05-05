@@ -24,10 +24,10 @@ struct simonsays {
 	uint8_t stage;
 };
 
-int simonsays_prepare_tick(struct bomb * bomb, struct module * module);
-int simonsays_tick(struct bomb * bomb, struct module * module);
+void simonsays_prepare_tick(struct bomb * bomb, struct module * module);
+void simonsays_tick(struct bomb * bomb, struct module * module);
 void simonsays_reset(struct bomb * bomb, struct module * module);
 
-#define SIMONSAYS_MOD_INIT {0, "simon says", &simonsays_prepare_tick, &simonsays_tick, &simonsays_reset, NULL}
+#define SIMONSAYS_MOD_INIT {"simon says", 0, &simonsays_prepare_tick, &simonsays_tick, &simonsays_reset, NULL}
 
 #endif
