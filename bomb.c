@@ -34,7 +34,7 @@ void strike(struct bomb * bomb, struct module * module) {
 void explode(struct bomb * bomb, char const* cause) {
 	printf("[bomb] exploded (%s)\n", cause);
 	bomb->state = BS_EXPLODED;
-	bomb->buzzer_timer = (bomb->flags & FL_LENIENT) ? PUNISH_BUZZER_TICKS : ~0ul;
+	bomb->buzzer_timer = (bomb->flags & FL_MERCIFUL) ? PUNISH_BUZZER_TICKS : ~0ul;
 	gpio_set(bomb->buzzer, 1);
 	bomb_reset(bomb);
 	return;
@@ -65,7 +65,6 @@ void bomb_prepare_tick(struct bomb * bomb) {
 	if (bomb->flags_read_progress == 0xff) {
 		printf(" ,*  KTHW v1.2\n(_)  (c) 2017 Toby P., Thomas H.\n");
 		bomb->state = BS_INITIALIZING_MODULES;
-		uart_enabled = bomb->flags & FL_UART ? 1 : 0;
 
 		bomb->timer = ((bomb->flags_time >> 2) & 0x3f) * 15 * TICKS_PER_SEC * 100;
 		bomb->strike_limit = /* 3; //*/bomb->flags_time & 0x03;

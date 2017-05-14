@@ -14,85 +14,11 @@
 
 #include "pins.inc.h"
 
-enum {
-	SR_TIMER0,	//seconds (ones), use util.h's sevenseg_digits
-	SR_TIMER1,	//seconds (tens), use util.h's sevenseg_digits
-	SR_TIMER2,	//minutes (ones), use util.h's sevenseg_digits
-	SR_TIMER3,	//minutes (tens), use util.h's sevenseg_digits
-	SR_STRIKE_COMPLETE,	//(MSB) complete 5..1, strike 3..1 (LSB)
-	SR_FLAGS0,	//(MSB) {<don't care>, <don't care>, FL_LBL_FRK, FL_PARPORT, FL_2BATS, FL_SER_EVEN, FL_SER_VOW, <don't care>} (LSB)
-	SR_FLAGS1,	//(MSB) 5 bits = time / 30s; 2 bits = strike limit
-
-	SR_SIMON_SAYS,	// (MSB) {Buttons (GRYB), LEDs (GRYB)} (LSB)
-
-	SR_MORSE_FREQ0,
-	SR_MORSE_FREQ1,
-	SR_MORSE_FREQ2,
-	SR_MORSE_FREQ3,
-
-	SR_CAP0,
-	SR_CAP1,
-
-	SR_MEM0,
-	SR_MEM1,
-	SR_MEM2,
-	SR_MEM3,
-	SR_MEM_DISP,
-	SR_MEM_STAGE,
-	SR_MEM_BTN,
-
-	SR_PWD_LCD,
-	SR_PWD_SER,
-
-	SR_WIRES,
-};
-
-struct shreg shregs[] = {
-	{&pins[GP_TIMER0_SER], 0}, //timer0
-	{&pins[GP_TIMER1_SER], 0}, //timer1
-	{&pins[GP_TIMER2_SER], 0}, //timer2
-	{&pins[GP_TIMER3_SER], 0}, //timer3
-	{&pins[GP_STRIKES_SER], 0}, //strikes
-	{&pins[GP_FLAGS0_SER], 0}, //flags0 (vowel, even, >=2 bats, parallel, FRK)
-	{&pins[GP_FLAGS1_SER], 0}, //flags1 (5 bits time, 3 bits strikes)
-
-	{&pins[GP_SIMONSAYS_SER], 0},
-
-	{&pins[GP_MORSE_FREQ0_SER], 0}, //morse_freq0
-	{&pins[GP_MORSE_FREQ1_SER], 0}, //morse_freq1
-	{&pins[GP_MORSE_FREQ2_SER], 0}, //morse_freq2
-	{&pins[GP_MORSE_FREQ3_SER], 0}, //morse_freq3
-
-	{&pins[GP_CAP0_SER], 0},
-	{&pins[GP_CAP1_SER], 0},
-
-	{&pins[GP_MEM0_SER], 0},
-	{&pins[GP_MEM1_SER], 0},
-	{&pins[GP_MEM2_SER], 0},
-	{&pins[GP_MEM3_SER], 0},
-	{&pins[GP_MEM_DISP_SER], 0},
-	{&pins[GP_MEM_STAGE_SER], 0},
-	{&pins[GP_MEM_BTN_SER], 0},
-
-	{&pins[GP_PWD_LCD_SER], 0},
-	{&pins[GP_PWD_SER], 0},
-
-	{&pins[GP_WIRES_SER], 0},
-};
-
-enum {
-	ADC_MORSE,
-};
-
-struct adc adcs[] = {
-	{10, 0},
-};
-
 struct lcd pwd_lcd = {&pins[GP_PWD_LCD_RS], &pins[GP_PWD_LCD_EN], &shregs[SR_PWD_LCD], LCD_NONE, 0};
 
 struct morse morse = {MORSE_MOD_INIT, &pins[GP_MORSE_LED], &pins[GP_MORSE_BTN], &adcs[ADC_MORSE], {&shregs[SR_MORSE_FREQ0], &shregs[SR_MORSE_FREQ1], &shregs[SR_MORSE_FREQ2], &shregs[SR_MORSE_FREQ3]}};
 struct simonsays simonsays = {SIMONSAYS_MOD_INIT, &pins[GP_SIMONSAYS_BTN], &shregs[SR_SIMON_SAYS]};
-struct wires wires = {WIRES_MOD_INIT, &shregs[SR_WIRES], &pins[GP_WIRES_IN]};
+struct wires wires = {WIRES_MOD_INIT, &shregs[SR_WIRES], &adcs[ADC_WIRES]};
 struct capacitor capacitor = {CAPACITOR_MOD_INIT, &pins[GP_CAP_IN], {&shregs[SR_CAP0], &shregs[SR_CAP1]}};
 struct memory memory = {MEMORY_MOD_INIT, &pins[GP_MEM_BTN_IN], &shregs[SR_MEM_BTN], &shregs[SR_MEM_STAGE], &shregs[SR_MEM_DISP], {&shregs[SR_MEM0], &shregs[SR_MEM1], &shregs[SR_MEM2], &shregs[SR_MEM3]}};
 struct password password = {PASSWORD_MOD_INIT, &pins[GP_PWD_IN], &shregs[SR_PWD_SER], &pwd_lcd};

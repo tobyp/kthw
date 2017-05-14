@@ -8,12 +8,12 @@
 struct wires {
 	struct module module;
 	struct shreg * shreg;
-	struct gpio * in;
+	struct adc * adc;
 
 	uint8_t ticks;
-	uint8_t morituri;  //wires that have to be removed to win
-	uint8_t removed;  //removing an already-removed wire should do fuck all.
-	uint8_t cache;
+	uint8_t wires[8];
+	uint8_t count;
+	uint8_t morituri; //index of wire that needs to be cut
 };
 
 void wires_prepare_tick(struct bomb * bomb, struct module * module);

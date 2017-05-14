@@ -5,8 +5,6 @@
 
 #include "stm32f407vg.h"
 
-#define NULL ((void*)0)
-
 extern uint8_t sevenseg_digits[];
 #define SEVENSEG_WITH_DOT(x) ((x) | 0x80)
 #define SEVENSEG_BLANK 0x00

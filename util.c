@@ -86,6 +86,11 @@ static void vprintf(char const* format, va_list args) {
 					uint32_t arg = va_arg(args, uint32_t);
 					print_uint(arg);
 					} break;
+				default: //also handles the %\0 case
+					print("<WARNING: unknown %specifier '");
+					put(*format);
+					print("'>");
+					break;
 			}
 		}
 		else {

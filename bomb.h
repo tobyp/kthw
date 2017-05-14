@@ -15,8 +15,8 @@ enum bomb_flags {
 	FL_2BATS = 0x4,  //the bomb has two or more batteries
 	FL_PARPORT = 0x8,  //the bomb has a parallel port
 	FL_LBL_FRK = 0x10,  //the bomb has a lit indicator labelled "FRK"
-	FL_UART = 0x20,  //enable external uart
-	FL_LENIENT = 0x40,  //don't punish failure with an infinite beep (just a long one)
+	FL_LBL_CAR = 0x20,  //the bomb has a lit indicator labelled "CAR"
+	FL_MERCIFUL = 0x40,  //don't punish failure with an infinite beep (just a long one)
 	FL_TICKTOCK = 0x80,  //make ticking sounds every second on buzzer2
 };
 
@@ -27,7 +27,7 @@ enum module_flags {
 };
 
 #define STRIKE_BUZZER_TICKS 25  //how long a strike buzzer sounds
-#define PUNISH_BUZZER_TICKS 200  //how long the buzzer sounds in FL_LENIENT mode (otherwise it's infinite)
+#define PUNISH_BUZZER_TICKS 200  //how long the buzzer sounds in FL_MERCIFUL mode (otherwise it's infinite)
 #define TICKTOCK_TICKS 1  //how long to beep every second in FL_TICKTOCK mode (otherwise not at all) 
 
 struct bomb;
