@@ -1,0 +1,6 @@
+*.bin
+*.elf
+*.o
+schematics/*.bak
+schematics/*-cache.lib
+schematics/*-rescue.lib

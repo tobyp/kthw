@@ -1,0 +1,481 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:74xgxx
+LIBS:ac-dc
+LIBS:actel
+LIBS:allegro
+LIBS:Altera
+LIBS:analog_devices
+LIBS:battery_management
+LIBS:bbd
+LIBS:bosch
+LIBS:brooktre
+LIBS:cmos_ieee
+LIBS:dc-dc
+LIBS:diode
+LIBS:elec-unifil
+LIBS:ESD_Protection
+LIBS:ftdi
+LIBS:gennum
+LIBS:graphic
+LIBS:hc11
+LIBS:ir
+LIBS:Lattice
+LIBS:leds
+LIBS:logo
+LIBS:maxim
+LIBS:mechanical
+LIBS:microchip_dspic33dsc
+LIBS:microchip_pic10mcu
+LIBS:microchip_pic12mcu
+LIBS:microchip_pic16mcu
+LIBS:microchip_pic18mcu
+LIBS:microchip_pic24mcu
+LIBS:microchip_pic32mcu
+LIBS:modules
+LIBS:motor_drivers
+LIBS:motors
+LIBS:msp430
+LIBS:nordicsemi
+LIBS:nxp
+LIBS:nxp_armmcu
+LIBS:onsemi
+LIBS:Oscillators
+LIBS:powerint
+LIBS:Power_Management
+LIBS:pspice
+LIBS:references
+LIBS:relays
+LIBS:rfcom
+LIBS:sensors
+LIBS:silabs
+LIBS:stm8
+LIBS:stm32
+LIBS:supertex
+LIBS:switches
+LIBS:transf
+LIBS:triac_thyristor
+LIBS:ttl_ieee
+LIBS:video
+LIBS:wiznet
+LIBS:Worldsemi
+LIBS:Xicor
+LIBS:zetex
+LIBS:Zilog
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 2 7
+Title "KTHW Password"
+Date "2017-05-07"
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 "The buttons are (QD-QH): Submit, up, down, left, right."
+Comment3 "Take care: the LCD pins are usually at the top of the screen, not the bottom."
+Comment4 "\"On the Subject of Passwords\""
+$EndDescr
+$Comp
+L LCD16X2 DS1
+U 1 1 59165D75
+P 6950 4700
+F 0 "DS1" H 6150 5100 50  0000 C CNN
+F 1 "LCD16X2" H 7650 5100 50  0000 C CNN
+F 2 "WC1602A" H 6950 4650 50  0001 C CIN
+F 3 "" H 6950 4700 50  0001 C CNN
+	1    6950 4700
+	0    1    -1   0   
+$EndComp
+$Comp
+L SW_Push SW6
+U 1 1 59165E19
+P 6400 2900
+F 0 "SW6" H 6450 3000 50  0000 L CNN
+F 1 "SW_Push" H 6400 2840 50  0000 C CNN
+F 2 "" H 6400 3100 50  0001 C CNN
+F 3 "" H 6400 3100 50  0001 C CNN
+	1    6400 2900
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74HC595 U3
+U 1 1 59166221
+P 5200 4600
+F 0 "U3" H 5350 5200 50  0000 C CNN
+F 1 "74HC595" H 5200 4000 50  0000 C CNN
+F 2 "" H 5200 4600 50  0001 C CNN
+F 3 "" H 5200 4600 50  0001 C CNN
+	1    5200 4600
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR16
+U 1 1 59166228
+P 4900 5250
+F 0 "#PWR16" H 4900 5000 50  0001 C CNN
+F 1 "GND" H 4900 5100 50  0000 C CNN
+F 2 "" H 4900 5250 50  0001 C CNN
+F 3 "" H 4900 5250 50  0001 C CNN
+	1    4900 5250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4900 5250 4900 5150
+Wire Wire Line
+	4400 4450 4500 4450
+Wire Wire Line
+	4900 3950 4900 4050
+Wire Wire Line
+	4100 4650 4500 4650
+Wire Wire Line
+	4200 4350 4500 4350
+Wire Wire Line
+	4500 4750 4500 5250
+Wire Wire Line
+	4500 5250 4900 5250
+Wire Wire Line
+	3950 4150 4500 4150
+Connection ~ 4400 3950
+Wire Wire Line
+	6450 4850 5900 4850
+Wire Wire Line
+	5900 4750 6450 4750
+Wire Wire Line
+	6450 4650 5900 4650
+Wire Wire Line
+	5900 4550 6450 4550
+Wire Wire Line
+	5900 4450 6450 4450
+Wire Wire Line
+	5900 4350 6450 4350
+Wire Wire Line
+	6450 4250 5900 4250
+Wire Wire Line
+	5900 4150 6450 4150
+NoConn ~ 5900 5050
+$Comp
+L GND #PWR17
+U 1 1 59166591
+P 6300 5550
+F 0 "#PWR17" H 6300 5300 50  0001 C CNN
+F 1 "GND" H 6300 5400 50  0000 C CNN
+F 2 "" H 6300 5550 50  0001 C CNN
+F 3 "" H 6300 5550 50  0001 C CNN
+	1    6300 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L POT_TRIM RV1
+U 1 1 5916677B
+P 6150 5450
+F 0 "RV1" V 5975 5450 50  0000 C CNN
+F 1 "100K" V 6050 5450 50  0000 C CNN
+F 2 "" H 6150 5450 50  0001 C CNN
+F 3 "" H 6150 5450 50  0001 C CNN
+	1    6150 5450
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6300 5450 6450 5450
+Connection ~ 6300 5450
+Wire Wire Line
+	6400 5550 6400 5350
+Wire Wire Line
+	6400 5350 6450 5350
+Text GLabel 6450 4950 0    60   Input ~ 0
+PW_LCD_EN
+Text GLabel 6450 5150 0    60   Input ~ 0
+PW_LCD_RS
+Wire Wire Line
+	6450 5250 6150 5250
+Wire Wire Line
+	6150 5250 6150 5300
+Wire Wire Line
+	6450 5050 6300 5050
+Wire Wire Line
+	6300 3950 6300 5550
+Wire Wire Line
+	4400 2000 4400 5450
+Wire Wire Line
+	4400 5450 6000 5450
+Connection ~ 4400 4450
+Connection ~ 4900 3950
+Wire Wire Line
+	6300 3950 6450 3950
+Connection ~ 6300 5050
+Wire Wire Line
+	4900 3950 4400 3950
+$Comp
+L 74HC595 U2
+U 1 1 59166CC9
+P 5200 2650
+F 0 "U2" H 5350 3250 50  0000 C CNN
+F 1 "74HC595" H 5200 2050 50  0000 C CNN
+F 2 "" H 5200 2650 50  0001 C CNN
+F 3 "" H 5200 2650 50  0001 C CNN
+	1    5200 2650
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR14
+U 1 1 59166CCF
+P 4900 3300
+F 0 "#PWR14" H 4900 3050 50  0001 C CNN
+F 1 "GND" H 4900 3150 50  0000 C CNN
+F 2 "" H 4900 3300 50  0001 C CNN
+F 3 "" H 4900 3300 50  0001 C CNN
+	1    4900 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4900 3300 4900 3200
+Wire Wire Line
+	4400 2500 4500 2500
+Wire Wire Line
+	4900 2000 4900 2100
+Wire Wire Line
+	3950 2700 4500 2700
+Wire Wire Line
+	3950 2400 4500 2400
+Wire Wire Line
+	4500 2800 4500 3300
+Wire Wire Line
+	4500 3300 4900 3300
+Wire Wire Line
+	3950 2200 4500 2200
+Connection ~ 4400 2500
+Connection ~ 4900 2000
+Wire Wire Line
+	4400 2000 4900 2000
+$Comp
+L 1N4148 D5
+U 1 1 59166FDD
+P 6050 2900
+F 0 "D5" H 6050 3000 50  0000 C CNN
+F 1 "1N4148" H 6050 2800 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6050 2725 50  0001 C CNN
+F 3 "" H 6050 2900 50  0001 C CNN
+	1    6050 2900
+	-1   0    0    1   
+$EndComp
+$Comp
+L SW_Push SW5
+U 1 1 5916710E
+P 7100 2800
+F 0 "SW5" H 7150 2900 50  0000 L CNN
+F 1 "SW_Push" H 7100 2740 50  0000 C CNN
+F 2 "" H 7100 3000 50  0001 C CNN
+F 3 "" H 7100 3000 50  0001 C CNN
+	1    7100 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L 1N4148 D4
+U 1 1 59167114
+P 6750 2800
+F 0 "D4" H 6750 2900 50  0000 C CNN
+F 1 "1N4148" H 6750 2700 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6750 2625 50  0001 C CNN
+F 3 "" H 6750 2800 50  0001 C CNN
+	1    6750 2800
+	-1   0    0    1   
+$EndComp
+$Comp
+L SW_Push SW4
+U 1 1 59167164
+P 6400 2700
+F 0 "SW4" H 6450 2800 50  0000 L CNN
+F 1 "SW_Push" H 6400 2640 50  0000 C CNN
+F 2 "" H 6400 2900 50  0001 C CNN
+F 3 "" H 6400 2900 50  0001 C CNN
+	1    6400 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L 1N4148 D3
+U 1 1 5916716A
+P 6050 2700
+F 0 "D3" H 6050 2800 50  0000 C CNN
+F 1 "1N4148" H 6050 2600 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6050 2525 50  0001 C CNN
+F 3 "" H 6050 2700 50  0001 C CNN
+	1    6050 2700
+	-1   0    0    1   
+$EndComp
+$Comp
+L SW_Push SW3
+U 1 1 5916719A
+P 7100 2600
+F 0 "SW3" H 7150 2700 50  0000 L CNN
+F 1 "SW_Push" H 7100 2540 50  0000 C CNN
+F 2 "" H 7100 2800 50  0001 C CNN
+F 3 "" H 7100 2800 50  0001 C CNN
+	1    7100 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L 1N4148 D2
+U 1 1 591671A0
+P 6750 2600
+F 0 "D2" H 6750 2700 50  0000 C CNN
+F 1 "1N4148" H 6750 2500 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6750 2425 50  0001 C CNN
+F 3 "" H 6750 2600 50  0001 C CNN
+	1    6750 2600
+	-1   0    0    1   
+$EndComp
+$Comp
+L SW_Push SW2
+U 1 1 591671FA
+P 6400 2500
+F 0 "SW2" H 6450 2600 50  0000 L CNN
+F 1 "SW_Push" H 6400 2440 50  0000 C CNN
+F 2 "" H 6400 2700 50  0001 C CNN
+F 3 "" H 6400 2700 50  0001 C CNN
+	1    6400 2500
+	1    0    0    -1  
+$EndComp
+$Comp
+L 1N4148 D1
+U 1 1 59167200
+P 6050 2500
+F 0 "D1" H 6050 2600 50  0000 C CNN
+F 1 "1N4148" H 6050 2400 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6050 2325 50  0001 C CNN
+F 3 "" H 6050 2500 50  0001 C CNN
+	1    6050 2500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	5900 2600 6600 2600
+Wire Wire Line
+	6600 2800 5900 2800
+Wire Wire Line
+	6600 2500 7300 2500
+Wire Wire Line
+	7300 2500 7300 3050
+Wire Wire Line
+	7300 2700 6600 2700
+Connection ~ 7300 2700
+Connection ~ 7300 2600
+Wire Wire Line
+	7300 2900 6600 2900
+Connection ~ 7300 2800
+NoConn ~ 5900 3100
+NoConn ~ 5900 2400
+NoConn ~ 5900 2300
+NoConn ~ 5900 2200
+Wire Wire Line
+	4200 4350 4200 2400
+Wire Wire Line
+	4100 2700 4100 4650
+Text GLabel 7400 3050 2    60   Output ~ 0
+PW_BTN_IN
+Wire Wire Line
+	7300 3050 7400 3050
+Connection ~ 7300 2900
+Text GLabel 3950 2200 0    60   Input ~ 0
+PW_BTN
+Text GLabel 3950 4150 0    60   Input ~ 0
+PW_LCD
+$Comp
+L VDD #PWR15
+U 1 1 59167BAA
+P 6450 4050
+F 0 "#PWR15" H 6450 3900 50  0001 C CNN
+F 1 "VDD" H 6450 4200 50  0000 C CNN
+F 2 "" H 6450 4050 50  0001 C CNN
+F 3 "" H 6450 4050 50  0001 C CNN
+	1    6450 4050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L LED D6
+U 1 1 5919991D
+P 4500 5750
+F 0 "D6" H 4500 5850 50  0000 C CNN
+F 1 "LED" H 4500 5650 50  0000 C CNN
+F 2 "" H 4500 5750 50  0001 C CNN
+F 3 "" H 4500 5750 50  0001 C CNN
+	1    4500 5750
+	-1   0    0    1   
+$EndComp
+$Comp
+L R R1
+U 1 1 59199924
+P 4200 5750
+F 0 "R1" V 4280 5750 50  0000 C CNN
+F 1 "1K" V 4200 5750 50  0000 C CNN
+F 2 "" V 4130 5750 50  0001 C CNN
+F 3 "" H 4200 5750 50  0001 C CNN
+	1    4200 5750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4650 5750 4750 5750
+Wire Wire Line
+	4750 5750 4750 5850
+$Comp
+L GND #PWR18
+U 1 1 5919992D
+P 4750 5850
+F 0 "#PWR18" H 4750 5600 50  0001 C CNN
+F 1 "GND" H 4750 5700 50  0000 C CNN
+F 2 "" H 4750 5850 50  0001 C CNN
+F 3 "" H 4750 5850 50  0001 C CNN
+	1    4750 5850
+	1    0    0    -1  
+$EndComp
+Text GLabel 3950 5750 0    60   Input ~ 0
+CMP_PW
+Wire Wire Line
+	3950 5750 4050 5750
+Text GLabel 3950 2400 0    60   Input ~ 0
+SRCLK
+Text GLabel 3950 2700 0    60   Input ~ 0
+RCLK
+Connection ~ 4100 2700
+Connection ~ 4200 2400
+Text GLabel 6400 5550 3    60   Input ~ 0
+5V
+$Comp
+L VDD #PWR13
+U 1 1 591CF6FD
+P 4400 2000
+F 0 "#PWR13" H 4400 1850 50  0001 C CNN
+F 1 "VDD" H 4400 2150 50  0000 C CNN
+F 2 "" H 4400 2000 50  0001 C CNN
+F 3 "" H 4400 2000 50  0001 C CNN
+	1    4400 2000
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC

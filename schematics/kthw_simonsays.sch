@@ -1,0 +1,452 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:74xgxx
+LIBS:ac-dc
+LIBS:actel
+LIBS:allegro
+LIBS:Altera
+LIBS:analog_devices
+LIBS:battery_management
+LIBS:bbd
+LIBS:bosch
+LIBS:brooktre
+LIBS:cmos_ieee
+LIBS:dc-dc
+LIBS:diode
+LIBS:elec-unifil
+LIBS:ESD_Protection
+LIBS:ftdi
+LIBS:gennum
+LIBS:graphic
+LIBS:hc11
+LIBS:ir
+LIBS:Lattice
+LIBS:leds
+LIBS:logo
+LIBS:maxim
+LIBS:mechanical
+LIBS:microchip_dspic33dsc
+LIBS:microchip_pic10mcu
+LIBS:microchip_pic12mcu
+LIBS:microchip_pic16mcu
+LIBS:microchip_pic18mcu
+LIBS:microchip_pic24mcu
+LIBS:microchip_pic32mcu
+LIBS:modules
+LIBS:motor_drivers
+LIBS:motors
+LIBS:msp430
+LIBS:nordicsemi
+LIBS:nxp
+LIBS:nxp_armmcu
+LIBS:onsemi
+LIBS:Oscillators
+LIBS:powerint
+LIBS:Power_Management
+LIBS:pspice
+LIBS:references
+LIBS:relays
+LIBS:rfcom
+LIBS:sensors
+LIBS:silabs
+LIBS:stm8
+LIBS:stm32
+LIBS:supertex
+LIBS:switches
+LIBS:transf
+LIBS:triac_thyristor
+LIBS:ttl_ieee
+LIBS:video
+LIBS:wiznet
+LIBS:Worldsemi
+LIBS:Xicor
+LIBS:zetex
+LIBS:Zilog
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 5 7
+Title "KTHW Simon Says"
+Date "2017-05-07"
+Rev ""
+Comp ""
+Comment1 "LEDs (QE-QH): yellow, red, blue, green. Buttons (QA-QD): green, red, yellow, blue."
+Comment2 "should be easy enough, though!"
+Comment3 "The LED and Button orders are sadly inconsistent. Reordering in hardware and code"
+Comment4 "\"On the Subject of Simon Says\""
+$EndDescr
+$Comp
+L LED D35
+U 1 1 59186081
+P 7700 3350
+F 0 "D35" H 7700 3450 50  0000 C CNN
+F 1 "LED_YL" H 7700 3250 50  0000 C CNN
+F 2 "" H 7700 3350 50  0001 C CNN
+F 3 "" H 7700 3350 50  0001 C CNN
+	1    7700 3350
+	-1   0    0    1   
+$EndComp
+$Comp
+L LED D37
+U 1 1 591860F9
+P 7700 3650
+F 0 "D37" H 7700 3750 50  0000 C CNN
+F 1 "LED_RD" H 7700 3550 50  0000 C CNN
+F 2 "" H 7700 3650 50  0001 C CNN
+F 3 "" H 7700 3650 50  0001 C CNN
+	1    7700 3650
+	-1   0    0    1   
+$EndComp
+$Comp
+L LED D39
+U 1 1 59186128
+P 7700 3950
+F 0 "D39" H 7700 4050 50  0000 C CNN
+F 1 "LED_BL" H 7700 3850 50  0000 C CNN
+F 2 "" H 7700 3950 50  0001 C CNN
+F 3 "" H 7700 3950 50  0001 C CNN
+	1    7700 3950
+	-1   0    0    1   
+$EndComp
+$Comp
+L LED D41
+U 1 1 59186149
+P 7700 4250
+F 0 "D41" H 7700 4350 50  0000 C CNN
+F 1 "LED_GR" H 7700 4150 50  0000 C CNN
+F 2 "" H 7700 4250 50  0001 C CNN
+F 3 "" H 7700 4250 50  0001 C CNN
+	1    7700 4250
+	-1   0    0    1   
+$EndComp
+$Comp
+L SW_Push SW9
+U 1 1 59186177
+P 6950 3250
+F 0 "SW9" H 7000 3350 50  0000 L CNN
+F 1 "SW_Push" H 6950 3190 50  0000 C CNN
+F 2 "" H 6950 3450 50  0001 C CNN
+F 3 "" H 6950 3450 50  0001 C CNN
+	1    6950 3250
+	1    0    0    -1  
+$EndComp
+$Comp
+L SW_Push SW10
+U 1 1 591861A9
+P 6950 3550
+F 0 "SW10" H 7000 3650 50  0000 L CNN
+F 1 "SW_Push" H 6950 3490 50  0000 C CNN
+F 2 "" H 6950 3750 50  0001 C CNN
+F 3 "" H 6950 3750 50  0001 C CNN
+	1    6950 3550
+	1    0    0    -1  
+$EndComp
+$Comp
+L SW_Push SW11
+U 1 1 591861E3
+P 6950 3850
+F 0 "SW11" H 7000 3950 50  0000 L CNN
+F 1 "SW_Push" H 6950 3790 50  0000 C CNN
+F 2 "" H 6950 4050 50  0001 C CNN
+F 3 "" H 6950 4050 50  0001 C CNN
+	1    6950 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L SW_Push SW12
+U 1 1 59186210
+P 6950 4150
+F 0 "SW12" H 7000 4250 50  0000 L CNN
+F 1 "SW_Push" H 6950 4090 50  0000 C CNN
+F 2 "" H 6950 4350 50  0001 C CNN
+F 3 "" H 6950 4350 50  0001 C CNN
+	1    6950 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74HC595 U11
+U 1 1 591865B4
+P 5000 3800
+F 0 "U11" H 5150 4400 50  0000 C CNN
+F 1 "74HC595" H 5000 3200 50  0000 C CNN
+F 2 "" H 5000 3800 50  0001 C CNN
+F 3 "" H 5000 3800 50  0001 C CNN
+	1    5000 3800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4700 4350 4700 4450
+Connection ~ 4700 4450
+Wire Wire Line
+	4700 3150 4700 3250
+Wire Wire Line
+	4200 3650 4300 3650
+Wire Wire Line
+	3750 3350 4300 3350
+Wire Wire Line
+	4300 3950 4300 4450
+Wire Wire Line
+	4300 4450 4700 4450
+Text GLabel 3750 3350 0    60   Input ~ 0
+SS_SER
+$Comp
+L GND #PWR36
+U 1 1 591865C7
+P 4700 4450
+F 0 "#PWR36" H 4700 4200 50  0001 C CNN
+F 1 "GND" H 4700 4300 50  0000 C CNN
+F 2 "" H 4700 4450 50  0001 C CNN
+F 3 "" H 4700 4450 50  0001 C CNN
+	1    4700 4450
+	1    0    0    -1  
+$EndComp
+Text GLabel 3750 3550 0    60   Input ~ 0
+SRCLK
+Text GLabel 3750 3850 0    60   Input ~ 0
+RCLK
+Wire Wire Line
+	3750 3550 4300 3550
+Wire Wire Line
+	3750 3850 4300 3850
+$Comp
+L R R53
+U 1 1 59186E88
+P 7400 3350
+F 0 "R53" V 7480 3350 50  0000 C CNN
+F 1 "1K" V 7400 3350 50  0000 C CNN
+F 2 "" V 7330 3350 50  0001 C CNN
+F 3 "" H 7400 3350 50  0001 C CNN
+	1    7400 3350
+	0    1    1    0   
+$EndComp
+$Comp
+L R R54
+U 1 1 59186F65
+P 7400 3650
+F 0 "R54" V 7480 3650 50  0000 C CNN
+F 1 "1K" V 7400 3650 50  0000 C CNN
+F 2 "" V 7330 3650 50  0001 C CNN
+F 3 "" H 7400 3650 50  0001 C CNN
+	1    7400 3650
+	0    1    1    0   
+$EndComp
+$Comp
+L R R55
+U 1 1 59186F9E
+P 7400 3950
+F 0 "R55" V 7480 3950 50  0000 C CNN
+F 1 "1K" V 7400 3950 50  0000 C CNN
+F 2 "" V 7330 3950 50  0001 C CNN
+F 3 "" H 7400 3950 50  0001 C CNN
+	1    7400 3950
+	0    1    1    0   
+$EndComp
+$Comp
+L R R56
+U 1 1 59186FDA
+P 7400 4250
+F 0 "R56" V 7480 4250 50  0000 C CNN
+F 1 "1K" V 7400 4250 50  0000 C CNN
+F 2 "" V 7330 4250 50  0001 C CNN
+F 3 "" H 7400 4250 50  0001 C CNN
+	1    7400 4250
+	0    1    1    0   
+$EndComp
+$Comp
+L 1N4148 D34
+U 1 1 5918701B
+P 6600 3250
+F 0 "D34" H 6600 3350 50  0000 C CNN
+F 1 "1N4148" H 6600 3150 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6600 3075 50  0001 C CNN
+F 3 "" H 6600 3250 50  0001 C CNN
+	1    6600 3250
+	-1   0    0    1   
+$EndComp
+$Comp
+L 1N4148 D36
+U 1 1 5918708E
+P 6600 3550
+F 0 "D36" H 6600 3650 50  0000 C CNN
+F 1 "1N4148" H 6600 3450 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6600 3375 50  0001 C CNN
+F 3 "" H 6600 3550 50  0001 C CNN
+	1    6600 3550
+	-1   0    0    1   
+$EndComp
+$Comp
+L 1N4148 D38
+U 1 1 591870D3
+P 6600 3850
+F 0 "D38" H 6600 3950 50  0000 C CNN
+F 1 "1N4148" H 6600 3750 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6600 3675 50  0001 C CNN
+F 3 "" H 6600 3850 50  0001 C CNN
+	1    6600 3850
+	-1   0    0    1   
+$EndComp
+$Comp
+L 1N4148 D40
+U 1 1 59187279
+P 6600 4150
+F 0 "D40" H 6600 4250 50  0000 C CNN
+F 1 "1N4148" H 6600 4050 50  0000 C CNN
+F 2 "Diodes_THT:D_DO-35_SOD27_Horizontal_RM10" H 6600 3975 50  0001 C CNN
+F 3 "" H 6600 4150 50  0001 C CNN
+	1    6600 4150
+	-1   0    0    1   
+$EndComp
+NoConn ~ 5700 4250
+Text GLabel 7250 4500 2    60   Output ~ 0
+SS_BTN_IN
+Wire Wire Line
+	7150 4500 7250 4500
+Wire Wire Line
+	7850 3350 7850 4350
+Connection ~ 7850 3650
+Connection ~ 7850 3950
+$Comp
+L GND #PWR35
+U 1 1 59187BF8
+P 7850 4350
+F 0 "#PWR35" H 7850 4100 50  0001 C CNN
+F 1 "GND" H 7850 4200 50  0000 C CNN
+F 2 "" H 7850 4350 50  0001 C CNN
+F 3 "" H 7850 4350 50  0001 C CNN
+	1    7850 4350
+	1    0    0    -1  
+$EndComp
+Connection ~ 7850 4250
+$Comp
+L LED D42
+U 1 1 5919833E
+P 4300 4750
+F 0 "D42" H 4300 4850 50  0000 C CNN
+F 1 "LED" H 4300 4650 50  0000 C CNN
+F 2 "" H 4300 4750 50  0001 C CNN
+F 3 "" H 4300 4750 50  0001 C CNN
+	1    4300 4750
+	-1   0    0    1   
+$EndComp
+$Comp
+L R R57
+U 1 1 591983AF
+P 4000 4750
+F 0 "R57" V 4080 4750 50  0000 C CNN
+F 1 "1K" V 4000 4750 50  0000 C CNN
+F 2 "" V 3930 4750 50  0001 C CNN
+F 3 "" H 4000 4750 50  0001 C CNN
+	1    4000 4750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4450 4750 4550 4750
+Wire Wire Line
+	4550 4750 4550 4850
+$Comp
+L GND #PWR37
+U 1 1 591984CA
+P 4550 4850
+F 0 "#PWR37" H 4550 4600 50  0001 C CNN
+F 1 "GND" H 4550 4700 50  0000 C CNN
+F 2 "" H 4550 4850 50  0001 C CNN
+F 3 "" H 4550 4850 50  0001 C CNN
+	1    4550 4850
+	1    0    0    -1  
+$EndComp
+Text GLabel 3750 4750 0    60   Input ~ 0
+CMP_SS
+Wire Wire Line
+	3750 4750 3850 4750
+$Comp
+L VDD #PWR34
+U 1 1 591C66BA
+P 4200 3150
+F 0 "#PWR34" H 4200 3000 50  0001 C CNN
+F 1 "VDD" H 4200 3300 50  0000 C CNN
+F 2 "" H 4200 3150 50  0001 C CNN
+F 3 "" H 4200 3150 50  0001 C CNN
+	1    4200 3150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4200 3650 4200 3150
+Wire Wire Line
+	4200 3150 4700 3150
+Wire Wire Line
+	7150 3250 7150 4500
+Connection ~ 7150 3550
+Connection ~ 7150 3850
+Connection ~ 7150 4150
+Wire Wire Line
+	5700 3350 5700 3250
+Wire Wire Line
+	5700 3250 6450 3250
+Wire Wire Line
+	5700 4050 5800 4050
+Wire Wire Line
+	5800 4050 5800 4250
+Wire Wire Line
+	5800 4250 7250 4250
+Wire Wire Line
+	5700 3950 7250 3950
+Wire Wire Line
+	5700 3750 5800 3750
+Wire Wire Line
+	5800 3750 5800 3350
+Wire Wire Line
+	5800 3350 7250 3350
+Wire Wire Line
+	5700 3450 6200 3450
+Wire Wire Line
+	6200 3450 6200 3550
+Wire Wire Line
+	6200 3550 6450 3550
+Wire Wire Line
+	5700 3550 6100 3550
+Wire Wire Line
+	6100 3550 6100 3850
+Wire Wire Line
+	6100 3850 6450 3850
+Wire Wire Line
+	5700 3650 5900 3650
+Wire Wire Line
+	5900 3650 5900 4150
+Wire Wire Line
+	5900 4150 6450 4150
+Wire Wire Line
+	5700 3850 6000 3850
+Wire Wire Line
+	6000 3850 6000 3650
+Wire Wire Line
+	6000 3650 7250 3650
+$EndSCHEMATC
