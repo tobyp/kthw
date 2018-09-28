@@ -1,6 +1,24 @@
+/* KTHW - Hardware Clone of Keep Talking and Nobody Explodes
+Copyright (C) 2017 Toby P., Thomas H.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 #include "wires.h"
 
 #include "util.h"
+
+/* The wires module has 3 to 6 color coded wires, of which exactly one needs to be
+cut depending on a pre-defined set of rules. */
 
 enum {
 	WI_NONE,
@@ -16,36 +34,38 @@ and the voltage divider resistor (between ADC pin and ground), in Ohms.
 Use something >= 1kOhm for the voltage divider (limits the current to <= 3.3mV),
 and values in the range [0.1*voltdiv, 10*voltdiv] for the wires (even spacing if possible).*/
 #define R_VOLTDIV 1000
+
 #define R_WHITE 100
-#define R_YELLOW 510
-#define R_RED 1000
-#define R_BLUE 4700
-#define R_BLACK 10000
+#define R_YELLOW 550
+#define R_RED 50
+#define R_BLUE 220
+#define R_BLACK 10
 
 char const* color_names[] = {"<none>", "WHITE", "YELLOW", "RED", "BLUE", "BLACK"};
 
 #define VOLTDIV(x, y) ((y) * 3096 / ((x) + (y)))  //the value we'd expect at the ADC pin with X Ohms against VCC and Y Ohms against GND
 #define MID(x, y) ((x) + (y)) / 2
 
-#define ADC_WHITE VOLTDIV(R_WHITE,R_VOLTDIV)
-#define ADC_YELLOW VOLTDIV(R_YELLOW,R_VOLTDIV)
-#define ADC_RED VOLTDIV(R_RED,R_VOLTDIV)
-#define ADC_BLUE VOLTDIV(R_BLUE,R_VOLTDIV)
-#define ADC_BLACK VOLTDIV(R_BLACK,R_VOLTDIV)
+#define ADC_WHITE VOLTDIV(R_WHITE,R_VOLTDIV) //2814
+#define ADC_YELLOW VOLTDIV(R_YELLOW,R_VOLTDIV) //1997
+#define ADC_RED VOLTDIV(R_RED,R_VOLTDIV) //2948
+#define ADC_BLUE VOLTDIV(R_BLUE,R_VOLTDIV) //2537
+#define ADC_BLACK VOLTDIV(R_BLACK,R_VOLTDIV) // 3065
 
-static struct color_range {
-	uint8_t color;
-	uint16_t upper;
-} color_ranges[] = {
-	{WI_NONE, MID(0, ADC_BLACK)},
-	{WI_BLACK, MID(ADC_BLACK, ADC_BLUE)},
-	{WI_BLUE, MID(ADC_BLUE, ADC_RED)},
-	{WI_RED, MID(ADC_RED, ADC_YELLOW)},
-	{WI_YELLOW, MID(ADC_YELLOW, ADC_WHITE)},
-	{WI_WHITE, MID(ADC_WHITE, 3096)},
-};
 
 static uint8_t adc_to_color(uint16_t adc) {
+	static struct color_range {
+		uint8_t color;
+		uint16_t upper;
+	} color_ranges[] = {
+		{WI_NONE, MID(0, ADC_YELLOW)},            //998
+		{WI_YELLOW, MID(ADC_YELLOW, ADC_BLUE)},   //2267
+		{WI_BLUE, MID(ADC_BLUE, ADC_WHITE)},      //2675
+		{WI_WHITE, MID(ADC_WHITE, ADC_RED)},     //2881
+		{WI_RED, MID(ADC_RED, ADC_BLACK)},        //3006
+		{WI_BLACK, 3096},         
+	};
+
 	for (size_t i=0; i<sizeof(color_ranges)/sizeof(struct color_range); ++i) {
 		if (adc < color_ranges[i].upper) return color_ranges[i].color;
 	}
@@ -106,38 +126,38 @@ static uint8_t wire_to_cut(struct bomb * bomb, struct wires * wires) {
 	uint8_t i_fourth = wires_index_nth(wires->wires, 3);
 	uint8_t i_last = wires_index_nth(wires->wires, -1);
 	uint8_t col_last = wires->wires[i_last];
-	uint8_t num_yellow = wires_count_color(wires->wires, WI_YELLOW);
-	uint8_t num_red = wires_count_color(wires->wires, WI_RED);
-	uint8_t num_blue = wires_count_color(wires->wires, WI_BLUE);
+	uint8_t count_yellow = wires_count_color(wires->wires, WI_YELLOW);
+	uint8_t count_red = wires_count_color(wires->wires, WI_RED);
+	uint8_t count_blue = wires_count_color(wires->wires, WI_BLUE);
 	uint8_t ser_odd = !(bomb->flags & FL_SER_EVEN);
 	if (wires->count == 3) {
 		uint8_t i_last_blue = wires_index_nth_color(wires->wires, -1, WI_BLUE);
-		if (num_red == 0) cut = i_second;
+		if (count_red == 0) cut = i_second;
 		else if (col_last == WI_WHITE) cut = i_last;
-		else if (num_blue > 1) cut = i_last_blue;
+		else if (count_blue > 1) cut = i_last_blue;
 		else cut = i_last;
 	}
 	else if (wires->count == 4) {
 		uint8_t i_last_red = wires_index_nth_color(wires->wires, -1, WI_RED);
-		if (num_red > 1 && ser_odd) cut = i_last_red;
-		else if (col_last == WI_YELLOW && num_red == 0) cut = i_first;
-		else if (num_blue == 1) cut = i_first;
-		else if (num_yellow > 1) cut = i_last;
+		if (count_red > 1 && ser_odd) cut = i_last_red;
+		else if (col_last == WI_YELLOW && count_red == 0) cut = i_first;
+		else if (count_blue == 1) cut = i_first;
+		else if (count_yellow > 1) cut = i_last;
 		else cut = i_second;
 	}
 	else if (wires->count == 5) {
-		uint8_t num_black = wires_count_color(wires->wires, WI_BLACK);
+		uint8_t count_black = wires_count_color(wires->wires, WI_BLACK);
 		if (col_last == WI_BLACK && ser_odd) cut = i_fourth;
-		else if (num_red == 1 && num_yellow > 1) cut = i_first;
-		else if (num_black == 0) cut = i_second;
+		else if (count_red == 1 && count_yellow > 1) cut = i_first;
+		else if (count_black == 0) cut = i_second;
 		else cut = i_first;
 	}
 	else if (wires->count == 6) {
 		uint8_t i_third = wires_index_nth(wires->wires, 2);
-		uint8_t num_white = wires_count_color(wires->wires, WI_WHITE);
-		if (num_yellow == 0 && ser_odd) cut = i_third;
-		else if (num_yellow == 1 && num_white > 1) cut = i_fourth;
-		else if (num_red == 0) cut = i_last;
+		uint8_t count_white = wires_count_color(wires->wires, WI_WHITE);
+		if (count_yellow == 0 && ser_odd) cut = i_third;
+		else if (count_yellow == 1 && count_white > 1) cut = i_fourth;
+		else if (count_red == 0) cut = i_last;
 		else cut = i_fourth;
 	}
 
@@ -158,9 +178,8 @@ void wires_prepare_tick(struct bomb * bomb, struct module * module) {
 		if (wires->adc->value == 0xffff) { //ADC hasn't refreshed yet
 			return;
 		}
-		/* calculate the index of the wire we started polling last tick. -1 because tick 0 is not polling anything yet. */
+		/* calculate the index of the wire we started polling last tick. -1 because tick 0 does not yet poll anything. */
 		uint8_t wire_index = (wires->ticks - 1) % 8;
-		printf("[XXX] %d = %d\n", wire_index, wires->adc->value);
 		wires->wires[wire_index] = adc_to_color(wires->adc->value);
 	}
 
