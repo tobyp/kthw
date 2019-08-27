@@ -36,10 +36,10 @@ and values in the range [0.1*voltdiv, 10*voltdiv] for the wires (even spacing if
 #define R_VOLTDIV 1000
 
 #define R_WHITE 100
-#define R_YELLOW 510
-#define R_RED 1000
-#define R_BLUE 4700
-#define R_BLACK 10000
+#define R_YELLOW 560
+#define R_RED 47
+#define R_BLUE 220
+#define R_BLACK 10
 
 char const* color_names[] = {"<none>", "WHITE", "YELLOW", "RED", "BLUE", "BLACK"};
 
