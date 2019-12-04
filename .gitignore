@@ -4,3 +4,4 @@
 schematics/*.bak
 schematics/*-cache.lib
 schematics/*-rescue.lib
+morse.words.inc

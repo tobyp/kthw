@@ -44,13 +44,13 @@ and values in the range [0.1*voltdiv, 10*voltdiv] for the wires (even spacing if
 char const* color_names[] = {"<none>", "WHITE", "YELLOW", "RED", "BLUE", "BLACK"};
 
 #define VOLTDIV(x, y) ((y) * 3096 / ((x) + (y)))  //the value we'd expect at the ADC pin with X Ohms against VCC and Y Ohms against GND
-#define MID(x, y) ((x) + (y)) / 2
+#define MID(x, y) (((x) + (y)) / 2)
 
-#define ADC_WHITE VOLTDIV(R_WHITE,R_VOLTDIV) //2814
-#define ADC_YELLOW VOLTDIV(R_YELLOW,R_VOLTDIV) //1997
-#define ADC_RED VOLTDIV(R_RED,R_VOLTDIV) //2948
-#define ADC_BLUE VOLTDIV(R_BLUE,R_VOLTDIV) //2537
-#define ADC_BLACK VOLTDIV(R_BLACK,R_VOLTDIV) // 3065
+#define ADC_WHITE VOLTDIV(R_WHITE,R_VOLTDIV)
+#define ADC_YELLOW VOLTDIV(R_YELLOW,R_VOLTDIV)
+#define ADC_RED VOLTDIV(R_RED,R_VOLTDIV)
+#define ADC_BLUE VOLTDIV(R_BLUE,R_VOLTDIV)
+#define ADC_BLACK VOLTDIV(R_BLACK,R_VOLTDIV)
 
 
 static uint8_t adc_to_color(uint16_t adc) {
@@ -58,12 +58,12 @@ static uint8_t adc_to_color(uint16_t adc) {
 		uint8_t color;
 		uint16_t upper;
 	} color_ranges[] = {
-		{WI_NONE, MID(0, ADC_YELLOW)},            //998
-		{WI_YELLOW, MID(ADC_YELLOW, ADC_BLUE)},   //2267
-		{WI_BLUE, MID(ADC_BLUE, ADC_WHITE)},      //2675
-		{WI_WHITE, MID(ADC_WHITE, ADC_RED)},     //2881
-		{WI_RED, MID(ADC_RED, ADC_BLACK)},        //3006
-		{WI_BLACK, 3096},         
+		{WI_NONE, MID(0, ADC_YELLOW)},
+		{WI_YELLOW, MID(ADC_YELLOW, ADC_BLUE)},
+		{WI_BLUE, MID(ADC_BLUE, ADC_WHITE)},
+		{WI_WHITE, MID(ADC_WHITE, ADC_RED)},
+		{WI_RED, MID(ADC_RED, ADC_BLACK)},
+		{WI_BLACK, 3096},
 	};
 
 	for (size_t i=0; i<sizeof(color_ranges)/sizeof(struct color_range); ++i) {
