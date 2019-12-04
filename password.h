@@ -6,9 +6,7 @@
 #include "bomb.h"
 #include "util.h"
 
-struct word {
-	char chars[6];
-};
+struct word;
 
 struct password {
 	struct module module;

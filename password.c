@@ -2,51 +2,16 @@
 
 #include <stdlib.h>
 
-struct word words[] = {
-	{"ABOUT"},
-	{"AFTER"},
-	{"AGAIN"},
-	{"BELOW"},
-	{"COULD"},
-	{"EVERY"},
-	{"FIRST"},
-	{"FOUND"},
-	{"GREAT"},
-	{"HOUSE"},
-	{"LARGE"},
-	{"LEARN"},
-	{"NEVER"},
-	{"OTHER"},
-	{"PLACE"},
-	{"PLANT"},
-	{"POINT"},
-	{"RIGHT"},
-	{"SMALL"},
-	{"SOUND"},
-	{"SPELL"},
-	{"STILL"},
-	{"STUDY"},
-	{"THEIR"},
-	{"THERE"},
-	{"THESE"},
-	{"THING"},
-	{"THINK"},
-	{"THREE"},
-	{"WATER"},
-	{"WHERE"},
-	{"WHICH"},
-	{"WORLD"},
-	{"WOULD"},
-	{"WRITE"},
+struct word {
+	char chars[6];
 };
 
-char impossibles[5][15] = { //some of these repeat the less exotic letters, to make them more likely, and also to match lengths of the arrays.
-	"DIJKMQUVXYZDIKM",
-	"CDJKNQSUWXYZNSD",
-	"BCDFJKMNPQSWXYZ",
-	"BFJKMPQVWXYZFMP",
-	"ABCFIJMOPQSTVXZ",
+struct slot_impossible {
+	unsigned char count;
+	char letters[25];  // if all 26 were impossible, the puzzle would be unsolvable!
 };
+
+#include "password.words.inc"
 
 #define BTN_RIGHT 0x1
 #define BTN_LEFT 0x2
@@ -101,15 +66,15 @@ static void populate_cylinders(struct password * password) {
 			while (password->word->chars[i] == words[k].chars[i]) { //do not exchange at a position where password == blockword
 				i = (i + 1) % 5;
 			}
-			uint8_t choice = rnd() % sizeof(impossibles[i]); //change to a letter that never appears at this position.
+			uint8_t choice = rnd() % impossibles[i].count; //change to a letter that never appears at this position.
 			uint8_t j=0;
 			while (words[k].chars[i] != password->letters[i][j]) { //find the letter that makes the blockword possible
 				++j;
 			}
-			while (has_letter[i] & (1 << impossibles[i][choice])) { //do not replace with a duplicate
-				choice = (choice + 1) % sizeof(impossibles[i]);
+			while (has_letter[i] & (1 << impossibles[i].letters[choice])) { //do not replace with a duplicate
+				choice = (choice + 1) % impossibles[i].count;
 			}
-			password->letters[i][j] = impossibles[i][choice];
+			password->letters[i][j] = impossibles[i].letters[choice];
 		}
 	}
 }

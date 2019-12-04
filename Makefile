@@ -19,10 +19,15 @@ main.bin: main.elf
 main.elf: startup.o main.o util.o bomb.o simonsays.o morse.o wires.o capacitor.o memory.o password.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
-morse.o: morse.words.inc
+morse.o: morse.c morse.words.inc
 
 morse.words.inc: morse.words.txt
 	./morse.words.py < $^ > $@
+
+password.o: password.c password.words.inc
+
+password.words.inc: password.words.txt
+	./password.words.py < $^ > $@
 
 main.o: main.c pins.inc.h
 
