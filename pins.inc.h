@@ -20,18 +20,22 @@
 #define GM_IN		0x0
 #define GPP_DOWN	0x2
 
+/* Preprocessor magic. */
 #define GPIO_OUT(bank, idx) {GPIO##bank##_BASE, GM_OUT, PIN_##idx}
 #define GPIO_IN(bank, idx) {GPIO##bank##_BASE, GM_IN, PIN_##idx}
 
 /*
-//Useful if you temporarily want to disable a pin - just uncomment and use the DUMMY bank
+//Useful if you temporarily want to disable a pin - just uncomment and use the DUMMY port
 static const uint32_t dummy_gpio_port[10] = {0};
 #define GPIODUMMY_BASE ((uint32_t)&dummy_gpio_port)
 */
 
+/* To use new ports, also adjust the GPIO section of main() */
+
 enum {
 	GP_SR_SRCLK,
 	GP_SR_RCLK,
+
 	GP_TIMER0_SER,
 	GP_TIMER1_SER,
 	GP_TIMER2_SER,
@@ -43,18 +47,23 @@ enum {
 	GP_FLAGS0_IN,
 	GP_FLAGS1_IN,
 	GP_STRIKES_SER,
+
 	GP_SIMONSAYS_SER,
 	GP_SIMONSAYS_BTN,
+
 	GP_MORSE_FREQ0_SER,
 	GP_MORSE_FREQ1_SER,
 	GP_MORSE_FREQ2_SER,
 	GP_MORSE_FREQ3_SER,
 	GP_MORSE_LED,
 	GP_MORSE_BTN,
+
 	GP_WIRES_SER,
+
 	GP_CAP0_SER,
 	GP_CAP1_SER,
 	GP_CAP_IN,
+
 	GP_MEM0_SER,
 	GP_MEM1_SER,
 	GP_MEM2_SER,
@@ -63,6 +72,7 @@ enum {
 	GP_MEM_STAGE_SER,
 	GP_MEM_BTN_SER,
 	GP_MEM_BTN_IN,
+
 	GP_PWD_SER,
 	GP_PWD_IN,
 	GP_PWD_LCD_SER,
@@ -118,7 +128,7 @@ struct gpio pins[] = {
 	GPIO_OUT(D, 0), //GP_PWD_LCD_EN
 };
 
-//pins conected/initialized to AF on reset
+//pins that are hard-wired, or initialized to AF on reset:
 //A13: JTMS
 //A14: JLCK
 //A15: JTDI
@@ -136,15 +146,17 @@ enum {
 	SR_TIMER2,	//minutes (ones), use util.h's sevenseg_digits
 	SR_TIMER3,	//minutes (tens), use util.h's sevenseg_digits
 	SR_STRIKE_COMPLETE,	//(MSB) complete 5..1, strike 3..1 (LSB)
-	SR_FLAGS0,	//(MSB) {<don't care>, <don't care>, FL_LBL_FRK, FL_PARPORT, FL_2BATS, FL_SER_EVEN, FL_SER_VOW, <don't care>} (LSB)
-	SR_FLAGS1,	//(MSB) 5 bits = time / 30s; 2 bits = strike limit
+	SR_FLAGS0,	//see BF_* constants in bomb.h
+	SR_FLAGS1,	//(MSB) 6 bits = time / 15s; 2 bits = strike limit
 
-	SR_SIMON_SAYS,	// (MSB) {Buttons (GRYB), LEDs (GRYB)} (LSB)
+	SR_SIMON_SAYS,
 
 	SR_MORSE_FREQ0,
 	SR_MORSE_FREQ1,
 	SR_MORSE_FREQ2,
 	SR_MORSE_FREQ3,
+
+	SR_WIRES,
 
 	SR_CAP0,
 	SR_CAP1,
@@ -159,25 +171,25 @@ enum {
 
 	SR_PWD_LCD,
 	SR_PWD_SER,
-
-	SR_WIRES,
 };
 
 struct shreg shregs[] = {
-	{&pins[GP_TIMER0_SER], 0}, //timer0
-	{&pins[GP_TIMER1_SER], 0}, //timer1
-	{&pins[GP_TIMER2_SER], 0}, //timer2
-	{&pins[GP_TIMER3_SER], 0}, //timer3
-	{&pins[GP_STRIKES_SER], 0}, //strikes
-	{&pins[GP_FLAGS0_SER], 0}, //flags0 (vowel, even, >=2 bats, parallel, FRK)
-	{&pins[GP_FLAGS1_SER], 0}, //flags1 (5 bits time, 3 bits strikes)
+	{&pins[GP_TIMER0_SER], 0},
+	{&pins[GP_TIMER1_SER], 0},
+	{&pins[GP_TIMER2_SER], 0},
+	{&pins[GP_TIMER3_SER], 0},
+	{&pins[GP_STRIKES_SER], 0},
+	{&pins[GP_FLAGS0_SER], 0},
+	{&pins[GP_FLAGS1_SER], 0},
 
 	{&pins[GP_SIMONSAYS_SER], 0},
 
-	{&pins[GP_MORSE_FREQ0_SER], 0}, //morse_freq0
-	{&pins[GP_MORSE_FREQ1_SER], 0}, //morse_freq1
-	{&pins[GP_MORSE_FREQ2_SER], 0}, //morse_freq2
-	{&pins[GP_MORSE_FREQ3_SER], 0}, //morse_freq3
+	{&pins[GP_MORSE_FREQ0_SER], 0},
+	{&pins[GP_MORSE_FREQ1_SER], 0},
+	{&pins[GP_MORSE_FREQ2_SER], 0},
+	{&pins[GP_MORSE_FREQ3_SER], 0},
+
+	{&pins[GP_WIRES_SER], 0},
 
 	{&pins[GP_CAP0_SER], 0},
 	{&pins[GP_CAP1_SER], 0},
@@ -192,12 +204,10 @@ struct shreg shregs[] = {
 
 	{&pins[GP_PWD_LCD_SER], 0},
 	{&pins[GP_PWD_SER], 0},
-
-	{&pins[GP_WIRES_SER], 0},
 };
 
-/* ADCS */
-/* To add more ADCs, make sure to adapt the port settings in the ADC section of main() */
+/* ADCs */
+/* To add more ADCs, also adjust the ADC section of main() */
 enum {
 	ADC_MORSE,
 	ADC_WIRES,
@@ -206,4 +216,13 @@ enum {
 struct adc adcs[] = {
 	{10, 0},
 	{11, 0},
+};
+
+/* LCDs */
+enum {
+	LCD_PWD,
+};
+
+struct lcd lcds[] = {
+	{&pins[GP_PWD_LCD_RS], &pins[GP_PWD_LCD_EN], &shregs[SR_PWD_LCD], LCD_NONE, 0},
 };

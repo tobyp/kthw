@@ -1,7 +1,8 @@
 *.bin
 *.elf
 *.o
+*.generated.c
 schematics/*.bak
 schematics/*-cache.lib
 schematics/*-rescue.lib
-morse.words.inc
+

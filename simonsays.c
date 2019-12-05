@@ -1,11 +1,38 @@
+/* KTHW - Hardware Clone of Keep Talking and Nobody Explodes
+Copyright (C) 2017 Toby P., Thomas H.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 #include "simonsays.h"
 
 #include "util.h"
 
-#define BTN_BLUE	0
-#define BTN_YELLOW	1
+/* Simon Says is an annoying little module that will blink color combinations
+at you and expects you to reply by pressing colored buttons back at it. In the beginning,
+the sequence is just one color, but when you complete it it just gets longer, for up to 6
+colors. */
+
+/* On+Off time for a single color */
+#define PHASE_TICKS 75
+/* On time for a single color */
+#define PHASE_DUTY_TICKS 35
+/* How many ticks you may wait between buttons in a sequence */
+#define BUTTON_COUNTDOWN_TICKS 500
+
+#define BTN_GREEN	0
+#define BTN_BLUE	1
 #define BTN_RED		2
-#define BTN_GREEN	3
+#define BTN_YELLOW	3
 
 #define LED_GREEN	0
 #define LED_BLUE	1
@@ -35,10 +62,10 @@ static inline uint8_t simonsays_expected(struct bomb * bomb, struct simonsays * 
 void simonsays_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct simonsays * simonsays = (struct simonsays *)module;
 
-	simonsays->stage_count = 4 + rnd() % 2;
+	simonsays->stage_count = rnd_range(4, 6);
 	printf("[%s] stage=0/%d sequence=[", module->name, simonsays->stage_count);
 	for (uint8_t i=0; i<simonsays->stage_count; ++i) {
-		simonsays->seq[i] = rnd() % 4;
+		simonsays->seq[i] = rnd_range(0, 4);
 		printf("%d,", simonsays->seq[i]);
 	}
 	printf("\b] expected=%d\n", simonsays_expected(bomb, simonsays));
@@ -51,6 +78,7 @@ void simonsays_tick(struct bomb * bomb, struct module * module) {
 
 	uint32_t poll_button = simonsays->ticks % 4;
 
+	/* You don't get forever to enter a sequence. */
 	if (simonsays->button_countdown != 0) {
 		simonsays->button_countdown--;
 		if (simonsays->button_countdown == 0) {
@@ -78,7 +106,7 @@ void simonsays_tick(struct bomb * bomb, struct module * module) {
 				}
 				else {
 					simonsays->ticks = (simonsays->stage + 1) * PHASE_TICKS;
-					simonsays->button_countdown = BUTTON_FLANK_TICKS;
+					simonsays->button_countdown = BUTTON_COUNTDOWN_TICKS;
 				}
 			}
 			else {

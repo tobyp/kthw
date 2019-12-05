@@ -1,17 +1,31 @@
+/* KTHW - Hardware Clone of Keep Talking and Nobody Explodes
+Copyright (C) 2017 Toby P., Thomas H.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 #include "capacitor.h"
 
 void capacitor_prepare_tick(struct bomb * bomb, struct module * module) {
 	struct capacitor * capacitor = (struct capacitor *)module;
 
-	module->flags |= MF_NEEDY;
-	capacitor->charge = 0;
-	capacitor->capacity = CAP_CAPACITY_MIN(bomb->timer) + rnd() % (CAP_CAPACITY_MAX(bomb->timer) - CAP_CAPACITY_MIN(bomb->timer));
+	capacitor->capacity = rnd_range(CAP_CAPACITY_MIN(bomb->timer), CAP_CAPACITY_MAX(bomb->timer));
 	printf("[%s] capacity=%d\n", module->name, capacitor->capacity);
+	capacitor->charge = 0;
 
-	capacitor->sr[0]->value = 0;
-	capacitor->sr[1]->value = 0;
+	capacitor->bargraph[0]->value = 0;
+	capacitor->bargraph[1]->value = 0;
 
-	module->flags |= MF_READY;
+	module->flags |= MF_NEEDY | MF_READY;
 }
 
 void capacitor_tick(struct bomb * bomb, struct module * module) {
@@ -35,13 +49,13 @@ void capacitor_tick(struct bomb * bomb, struct module * module) {
 
 	uint32_t bars = capacitor->charge * 16 / capacitor->capacity;
 	bars = (1ul << bars) - 1;
-	capacitor->sr[0]->value = bars & 0xff;
-	capacitor->sr[1]->value = (bars >> 8) & 0xff;
+	capacitor->bargraph[0]->value = bars & 0xff;
+	capacitor->bargraph[1]->value = (bars >> 8) & 0xff;
 }
 
 void capacitor_reset(struct bomb * bomb, struct module * module) {
 	struct capacitor * capacitor = (struct capacitor *)module;
 
-	capacitor->sr[0]->value = 0;
-	capacitor->sr[1]->value = 0;
+	capacitor->bargraph[0]->value = 0;
+	capacitor->bargraph[1]->value = 0;
 }

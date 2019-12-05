@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 
+# KTHW - Hardware Clone of Keep Talking and Nobody Explodes
+# Copyright (C) 2019 Toby P.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import decimal
 import sys
 
@@ -49,7 +64,7 @@ def main():
 
 		word_bits = 0
 		for morse_piece in morse_word:
-			if morse_piece == '.': 
+			if morse_piece == '.':
 				word_bits = word_bits << 2 | 0b01
 			elif morse_piece == '-':
 				word_bits = word_bits << 4 | 0b0111

@@ -1,8 +1,21 @@
-#include "util.h"
+/* KTHW - Hardware Clone of Keep Talking and Nobody Explodes
+Copyright (C) 2017 Toby P., Thomas H.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stdarg.h>
 
-#include "stm32f407vg.h"
+#include "util.h"
 
 uint8_t sevenseg_digits[] = {0x7e, 0x48, 0x3d, 0x6d, 0x4b, 0x67, 0x77, 0x4c, 0x7f, 0x6f};
 static char hexits[] = "0123456789abcdef";
@@ -111,6 +124,10 @@ void printf(char const* format, ...) {
 uint32_t rnd() {
 	while ((*RNG_SR & RNG_SR_DRDY) == 0) ;
 	return *RNG_DR;
+}
+
+uint32_t rnd_range(uint32_t min, uint32_t max) {
+	return min + rnd() % (max - min);
 }
 
 uint32_t clamp(uint32_t v, uint32_t lower, uint32_t upper) {

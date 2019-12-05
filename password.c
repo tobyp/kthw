@@ -1,17 +1,39 @@
+/* KTHW - Hardware Clone of Keep Talking and Nobody Explodes
+Copyright (C) 2017 Toby P., Thomas H.
+Copyright (C) 2019 Toby P.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 #include "password.h"
 
 #include <stdlib.h>
+
+/* The password module has 5 cylinder columns of 6 letters each, which can be
+spun to spell exactly one word from the a pre-defined list. To disable the
+module, you must find that exact word, select it, and press the submit
+button. */
 
 struct word {
 	char chars[6];
 };
 
+// impossibles[N] == the letters that can never appear in column N.
 struct slot_impossible {
 	unsigned char count;
 	char letters[25];  // if all 26 were impossible, the puzzle would be unsolvable!
 };
 
-#include "password.words.inc"
+#include "password.words.generated.c"
 
 #define BTN_RIGHT 0x1
 #define BTN_LEFT 0x2
@@ -20,6 +42,8 @@ struct slot_impossible {
 #define BTN_SUBMIT 0x10
 
 static void populate_cylinders(struct password * password) {
+	/* possibilities[word] tracks whether that word is possible, per column, as a bitmask.
+	E.g. 0x1f means it is possible in every column and thus totally possible. */
 	uint8_t possibilities[sizeof(words)/sizeof(struct word)];
 	for (uint8_t i=0; i<sizeof(possibilities); ++i) {
 		possibilities[i] = 0;
@@ -39,42 +63,45 @@ static void populate_cylinders(struct password * password) {
 		1 << (password->letters[4][0] - 'A'),
 	};
 
-	//generate letters, and track which col has_letters, and which words are possible in which column
-	for (uint8_t i=0; i<5; ++i) {
-		for (uint8_t j=0; j<6; ++j) {
-			if (j != 0) {
-				uint8_t letter = rnd() % 26;
-				while (has_letter[i] & (1 << letter)) {
+	for (uint8_t col=0; col<5; ++col) {
+		for (uint8_t row=0; row<6; ++row) {
+			if (row != 0) {  // row 0 already contains the password letter, don't change that
+				/* generate a new letter for that column. */
+				uint8_t letter = rnd_range(0, 26);
+				while (has_letter[col] & (1 << letter)) {
 					letter = (letter + 1) % 26;
 				}
-				password->letters[i][j] = letter + 'A';
-				has_letter[i] |= (1 << letter);
+				password->letters[col][row] = letter + 'A';
+				has_letter[col] |= (1 << letter);
 			}
-			for (uint8_t k=0; k<sizeof(possibilities); ++k) {
-				if (words[k].chars[i] == password->letters[i][j]) {
-					possibilities[k] |= (1 << i);
+			for (uint8_t word=0; word<sizeof(possibilities); ++word) {
+				if (words[word].chars[col] == password->letters[col][row]) {
+					possibilities[word] |= (1 << col);
 				}
 			}
 		}
 	}
 
-	//
-	for (uint8_t k=0; k<sizeof(possibilities); ++k) {
-		if (&words[k] == password->word) continue;
-		if (possibilities[k] == 0x1f) { //this word is possible but shouldn't be--block it!
-			uint8_t i = rnd() % 5; //block by changing a random position 
-			while (password->word->chars[i] == words[k].chars[i]) { //do not exchange at a position where password == blockword
-				i = (i + 1) % 5;
+	for (uint8_t word=0; word<sizeof(possibilities); ++word) {
+		if (&words[word] == password->word) continue;  // don't touch the password
+		if (possibilities[word] == 0x1f) { //this word is possible but shouldn't be -- block it!
+			/* select a random column to block the word on. */
+			uint8_t col = rnd_range(0, 5);
+			while (password->word->chars[col] == words[word].chars[col]) { //do not change a row where password == blockword
+				col = (col + 1) % 5;
 			}
-			uint8_t choice = rnd() % impossibles[i].count; //change to a letter that never appears at this position.
-			uint8_t j=0;
-			while (words[k].chars[i] != password->letters[i][j]) { //find the letter that makes the blockword possible
-				++j;
+			/* find the letter that makes the word possible */
+			uint8_t row = 0;
+			while (words[word].chars[col] != password->letters[col][row]) {
+				++row;
 			}
-			while (has_letter[i] & (1 << impossibles[i].letters[choice])) { //do not replace with a duplicate
-				choice = (choice + 1) % impossibles[i].count;
+			/* Chose a replacement that never appears in that column, but also isn't a duplicate */
+			uint8_t replacement = rnd_range(0, impossibles[col].count);
+			while (has_letter[col] & (1 << impossibles[col].letters[replacement])) {
+				replacement = (replacement + 1) % impossibles[col].count;
 			}
-			password->letters[i][j] = impossibles[i].letters[choice];
+
+			password->letters[col][row] = impossibles[col].letters[replacement];
 		}
 	}
 }
@@ -84,16 +111,17 @@ void password_prepare_tick(struct bomb * bomb, struct module * module) {
 	switch (password->ticks) {
 	//init
 	case 0:
-		password->word = &words[rnd() % (sizeof(words)/sizeof(struct word))];
+		password->word = &words[rnd_range(0, sizeof(words)/sizeof(struct word))];
 		printf("[%s] word=\"%s\"\n", module->name, password->word->chars);
 
 		populate_cylinders(password);
 
-		password->selections[0] = rnd() % 6;
-		password->selections[1] = rnd() % 6;
-		password->selections[2] = rnd() % 6;
-		password->selections[3] = rnd() % 6;
-		password->selections[4] = rnd() % 6;
+		/* "Spin" the cylinders. Are you feeling lucky, punk? */
+		password->selections[0] = rnd_range(0, 6);
+		password->selections[1] = rnd_range(0, 6);
+		password->selections[2] = rnd_range(0, 6);
+		password->selections[3] = rnd_range(0, 6);
+		password->selections[4] = rnd_range(0, 6);
 
 		password->lcd->mode = LCD_CMD;
 		password->lcd->cmd = 0x0c;

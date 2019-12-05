@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 
+# KTHW - Hardware Clone of Keep Talking and Nobody Explodes
+# Copyright (C) 2019 Toby P.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import sys
 
 
@@ -27,7 +42,7 @@ def main():
 		print("There must be at least one password in the file.")
 		return 1
 
-	print("static const struct slot_impossible impossibles[5]")
+	print("static const struct slot_impossible impossibles[5] = {")
 	for i, slot_impossible in enumerate(impossibles):
 		if len(slot_impossible) < 5:  # 6 letters per slot, and up to 5 may need to be changed to make undesirable words impossible
 			print(f"There are not enough characters that are impossible at slot[{i}] to guarantee a collision free random initialization of the module!")

@@ -1,5 +1,6 @@
 /* KTHW - Hardware Clone of Keep Talking and Nobody Explodes
 Copyright (C) 2017 Toby P., Thomas H.
+Copyright (C) 2018 Thomas H.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

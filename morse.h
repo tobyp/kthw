@@ -1,3 +1,18 @@
+/* KTHW - Hardware Clone of Keep Talking and Nobody Explodes
+Copyright (C) 2017 Toby P., Thomas H.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
 #ifndef MORSE_H_
 #define MORSE_H_
 
@@ -10,6 +25,10 @@
 
 struct morse_seq {
 	char const* word;
+	/* A dot is a single 1-bit. A dash is three 1-bits.
+	A pause between dots/dashes is a single 0-bit.
+	A pause between letters is three 0-bits.
+	The pause between repetitions of the word is 7 0-bits. */
 	uint8_t dots[32];
 	uint8_t bits;
 	uint16_t freq;
